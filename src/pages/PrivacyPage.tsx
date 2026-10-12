@@ -21,9 +21,8 @@ const sections = [
   {
     title: 'Product demos and previews',
     body: [
-      'Demos such as Pulse use a fictional business and invented records. Changes you make are held in the page’s memory only and are discarded when you reload or close the tab.',
-      'Demos do not use local storage, cookies or any network requests to save your changes.',
-      'The Invoice & Payment Tracker design preview checks what you type into its forms, but does not save, send or keep any of it.',
+      'Demos such as Pulse and the Invoice & Payment Tracker use a fictional business and invented records. Changes you make, including invoices you create and payments you record, are held in the page’s memory only and are discarded when you reload or close the tab.',
+      'Demos do not use local storage, cookies or any network requests to save your changes. Recording a payment in a demo does not move any money.',
     ],
   },
   {

@@ -1,6 +1,6 @@
-import { ArrowLeft, Banknote, CircleCheck } from 'lucide-react';
-import type { InvoiceRow } from './invoiceView';
-import { lineAmount } from './invoiceView';
+import { ArrowLeft, Banknote, CircleCheck, Send } from 'lucide-react';
+import { gstLabel, lineAmount, type InvoiceRow } from './invoiceLogic';
+import { toRupees } from './money';
 import { InvoiceStatusBadge } from './InvoiceStatusBadge';
 import { Button } from '../../components/Button';
 import { Card, Panel } from '../../components/Panel';
@@ -11,12 +11,15 @@ interface Props {
   row: InvoiceRow;
   onBack: () => void;
   onRecordPayment: () => void;
+  onMarkSent: () => void;
 }
 
-export function InvoiceDetail({ row, onBack, onRecordPayment }: Props) {
+export function InvoiceDetail({ row, onBack, onRecordPayment, onMarkSent }: Props) {
   const { invoice, totals } = row;
-  const canRecord = row.status !== 'draft' && row.balance > 0;
+  const isDraft = row.status === 'draft';
+  const canRecord = !isDraft && row.balance > 0;
   const paidShare = totals.total ? Math.min(1, row.paid / totals.total) : 0;
+  const money = (paise: number) => formatAmount(toRupees(paise));
 
   return (
     <div className="space-y-6">
@@ -39,13 +42,19 @@ export function InvoiceDetail({ row, onBack, onRecordPayment }: Props) {
               {row.status === 'overdue' ? <span className="text-danger-strong"> · {pluralize(row.daysOverdue, 'day')} late</span> : null}
             </p>
           </div>
-          <Button onClick={onRecordPayment} disabled={!canRecord}>
-            <Banknote size={17} aria-hidden="true" /> Record payment
-          </Button>
+          {isDraft ? (
+            <Button onClick={onMarkSent}>
+              <Send size={17} aria-hidden="true" /> Mark as sent
+            </Button>
+          ) : (
+            <Button onClick={onRecordPayment} disabled={!canRecord}>
+              <Banknote size={17} aria-hidden="true" /> Record payment
+            </Button>
+          )}
         </div>
         {!canRecord ? (
           <p className="mt-2 text-right text-xs text-fg-subtle">
-            {row.status === 'draft' ? 'Send the invoice before recording payments.' : 'This invoice is fully paid.'}
+            {isDraft ? 'Mark the invoice as sent before recording payments.' : 'This invoice is fully paid.'}
           </p>
         ) : null}
       </div>
@@ -77,12 +86,12 @@ export function InvoiceDetail({ row, onBack, onRecordPayment }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {invoice.lines.map((l) => (
-                  <tr key={l.description}>
+                {invoice.lines.map((l, i) => (
+                  <tr key={i}>
                     <td className="px-5 py-3 text-fg sm:px-7">{l.description}</td>
                     <td className="tabular px-3 py-3 text-right text-fg-muted">{l.quantity}</td>
-                    <td className="tabular px-3 py-3 text-right text-fg-muted">{formatAmount(l.rate)}</td>
-                    <td className="tabular px-5 py-3 text-right font-medium text-fg sm:px-7">{formatAmount(lineAmount(l))}</td>
+                    <td className="tabular px-3 py-3 text-right text-fg-muted">{money(l.ratePaise)}</td>
+                    <td className="tabular px-5 py-3 text-right font-medium text-fg sm:px-7">{money(lineAmount(l))}</td>
                   </tr>
                 ))}
               </tbody>
@@ -92,33 +101,39 @@ export function InvoiceDetail({ row, onBack, onRecordPayment }: Props) {
           <dl className="tabular ml-auto max-w-sm space-y-2 text-sm">
             <div className="flex justify-between gap-6">
               <dt className="text-fg-muted">Subtotal</dt>
-              <dd className="text-fg">{formatAmount(totals.subtotal)}</dd>
+              <dd className="text-fg">{money(totals.subtotal)}</dd>
             </div>
             <div className="flex justify-between gap-6">
-              <dt className="text-fg-muted">GST ({Math.round(invoice.taxRate * 100)}%)</dt>
-              <dd className="text-fg">{formatAmount(totals.tax)}</dd>
+              <dt className="text-fg-muted">GST ({gstLabel(invoice.gstBasisPoints)})</dt>
+              <dd className="text-fg">{money(totals.gst)}</dd>
             </div>
             <div className="flex justify-between gap-6 border-t border-line pt-2 text-base font-semibold">
               <dt className="text-fg">Total</dt>
-              <dd className="text-fg">{formatAmount(totals.total)}</dd>
+              <dd className="text-fg">{money(totals.total)}</dd>
             </div>
             <div className="flex justify-between gap-6">
               <dt className="text-fg-muted">Paid</dt>
-              <dd className="text-fg">− {formatAmount(row.paid)}</dd>
+              <dd className="text-fg">− {money(row.paid)}</dd>
             </div>
             <div className="flex justify-between gap-6 rounded-[var(--radius-control)] bg-subtle px-3 py-2 font-semibold">
               <dt className="text-fg">Balance due</dt>
-              <dd className={row.status === 'overdue' ? 'text-danger-strong' : 'text-fg'}>{formatAmount(row.balance)}</dd>
+              <dd className={row.status === 'overdue' ? 'text-danger-strong' : 'text-fg'}>{money(row.balance)}</dd>
             </div>
           </dl>
           </div>
+          {invoice.notes ? (
+            <div className="border-t border-line px-5 py-4 sm:px-7">
+              <p className="text-xs font-medium text-fg-subtle">Notes</p>
+              <p className="mt-1 text-sm whitespace-pre-line text-fg-muted">{invoice.notes}</p>
+            </div>
+          ) : null}
         </Card>
 
         <div className="space-y-6">
           <Panel title="Payment progress">
             <div className="p-4 sm:p-5">
               <p className="tabular text-sm text-fg-muted">
-                <span className="text-lg font-semibold text-fg">{formatAmount(row.paid)}</span> of {formatAmount(totals.total)}
+                <span className="text-lg font-semibold text-fg">{money(row.paid)}</span> of {money(totals.total)}
               </p>
               <div
                 className="mt-3 h-2 rounded-full bg-chart-track"
@@ -126,11 +141,11 @@ export function InvoiceDetail({ row, onBack, onRecordPayment }: Props) {
                 aria-label="Share of invoice paid"
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-valuenow={Math.round(paidShare * 100)}
+                aria-valuenow={Math.floor(paidShare * 100)}
               >
                 <div className="h-full rounded-full bg-chart" style={{ width: `${paidShare * 100}%` }} />
               </div>
-              <p className="mt-2 text-xs text-fg-muted">{Math.round(paidShare * 100)}% paid</p>
+              <p className="mt-2 text-xs text-fg-muted">{Math.floor(paidShare * 100)}% paid</p>
             </div>
           </Panel>
           <Panel title="Payments" aside={<span className="text-xs text-fg-muted">{pluralize(row.payments.length, 'payment')}</span>}>
@@ -150,7 +165,7 @@ export function InvoiceDetail({ row, onBack, onRecordPayment }: Props) {
                         </span>
                       </span>
                     </span>
-                    <span className="tabular shrink-0 text-sm font-semibold text-fg">{formatAmount(p.amount)}</span>
+                    <span className="tabular shrink-0 text-sm font-semibold text-fg">{money(p.amountPaise)}</span>
                   </li>
                 ))}
               </ul>

@@ -1,7 +1,10 @@
-import { useEffect, useId, useMemo, useState } from 'react';
-import { AlarmClock, Banknote, Files, LayoutDashboard, Plus, ReceiptText, Search, SearchX, Wallet, type LucideIcon } from 'lucide-react';
-import { createInvoiceSample, invoiceIssuer } from '../../data/invoiceSample';
-import { aging, filterRows, invoiceRows, overview, statusFilters, type StatusFilter } from './invoiceView';
+import { useEffect, useId, useState } from 'react';
+import { AlarmClock, Banknote, Files, LayoutDashboard, Plus, ReceiptText, RotateCcw, Search, SearchX, Wallet, type LucideIcon } from 'lucide-react';
+import { invoiceIssuer } from '../../data/invoiceSample';
+import { nextInvoiceNumber, type InvoiceOverview, type InvoiceRow } from './invoiceLogic';
+import { aging, filterRows, overdueRows, statusFilters, type StatusFilter } from './invoiceView';
+import { useInvoiceDemo } from './useInvoiceDemo';
+import { toRupees } from './money';
 import { InvoiceTable } from './InvoiceTable';
 import { InvoiceDetail } from './InvoiceDetail';
 import { NewInvoiceForm } from './NewInvoiceForm';
@@ -21,13 +24,20 @@ const nav: { name: ListView; label: string; icon: LucideIcon }[] = [
   { name: 'invoices', label: 'Invoices', icon: Files },
 ];
 
-/** Invoice & Payment Tracker — design preview with fictional records. */
+/**
+ * Invoice & Payment Tracker demo with fictional records. All screens read the same
+ * in-memory book (useInvoiceDemo), so totals, balances and statuses always agree.
+ */
 export function InvoiceTracker() {
-  const data = useMemo(() => createInvoiceSample(), []);
-  const rows = useMemo(() => invoiceRows(data), [data]);
-  const summary = useMemo(() => overview(rows, data.payments), [rows, data.payments]);
+  const { book, rows, summary, actions } = useInvoiceDemo();
   const [view, setView] = useState<View>({ name: 'overview' });
   const [paymentFor, setPaymentFor] = useState<string | null>(null);
+  // A fresh drawer for every opening, so it never shows the previous entry, even for a frame.
+  const [paymentSession, setPaymentSession] = useState(0);
+  const startPayment = (id: string) => {
+    setPaymentFor(id);
+    setPaymentSession((n) => n + 1);
+  };
   const { toast, notify } = useToast(5000);
 
   useEffect(() => {
@@ -37,7 +47,13 @@ export function InvoiceTracker() {
   const open = (id: string) => setView({ name: 'detail', id, from: view.name === 'invoices' ? 'invoices' : 'overview' });
   const activeNav = view.name === 'detail' ? view.from : view.name === 'new' ? null : view.name;
   const detailRow = view.name === 'detail' ? rows.find((r) => r.invoice.id === view.id) : undefined;
-  const nextNumber = `INV-2026-${String(Math.max(...data.invoices.map((i) => Number(i.number.slice(-3)))) + 1).padStart(3, '0')}`;
+  const nextNumber = nextInvoiceNumber(book.invoices, book.today);
+  const reset = () => {
+    actions.reset();
+    setPaymentFor(null);
+    setView({ name: view.name === 'invoices' ? 'invoices' : 'overview' });
+    notify('Sample data restored.');
+  };
 
   return (
     <div className="flex min-h-[calc(100dvh-3.5rem)] flex-col lg:flex-row">
@@ -82,48 +98,78 @@ export function InvoiceTracker() {
       <div className="min-w-0 flex-1 bg-canvas">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {view.name === 'overview' ? (
-            <OverviewView rows={rows} summary={summary} today={data.today} onOpen={open} onNew={() => setView({ name: 'new' })} onAll={() => setView({ name: 'invoices' })} />
+            <OverviewView rows={rows} summary={summary} today={book.today} onOpen={open} onNew={() => setView({ name: 'new' })} onAll={() => setView({ name: 'invoices' })} onReset={reset} />
           ) : null}
-          {view.name === 'invoices' ? <InvoicesView rows={rows} onOpen={open} onNew={() => setView({ name: 'new' })} /> : null}
+          {view.name === 'invoices' ? <InvoicesView rows={rows} onOpen={open} onNew={() => setView({ name: 'new' })} onReset={reset} /> : null}
           {view.name === 'new' ? (
             <NewInvoiceForm
-              customers={data.customers}
+              customers={book.customers}
               nextNumber={nextNumber}
-              today={data.today}
+              today={book.today}
               onCancel={() => setView({ name: 'invoices' })}
-              onSubmitted={(s, asDraft) =>
-                notify(`Checked: ${s}. Design preview — ${asDraft ? 'drafts' : 'invoices'} aren’t saved yet.`, 'info')
-              }
+              onCreate={(input) => {
+                const result = actions.create(input);
+                if (result.ok) {
+                  setView({ name: 'detail', id: result.invoice.id, from: 'invoices' });
+                  notify(`${result.invoice.number} ${result.invoice.draft ? 'saved as a draft' : 'created'}.`);
+                }
+                return result;
+              }}
             />
           ) : null}
           {view.name === 'detail' && detailRow ? (
-            <InvoiceDetail row={detailRow} onBack={() => setView({ name: view.from })} onRecordPayment={() => setPaymentFor(detailRow.invoice.id)} />
+            <InvoiceDetail
+              row={detailRow}
+              onBack={() => setView({ name: view.from })}
+              onRecordPayment={() => startPayment(detailRow.invoice.id)}
+              onMarkSent={() => {
+                const result = actions.markSent(detailRow.invoice.id);
+                notify(result.ok ? `${detailRow.invoice.number} marked as sent.` : (Object.values(result.errors)[0] ?? 'Couldn’t send this invoice.'), result.ok ? 'success' : 'info');
+              }}
+            />
           ) : null}
         </div>
       </div>
 
       <RecordPaymentDrawer
+        key={paymentSession}
         row={rows.find((r) => r.invoice.id === paymentFor)}
         open={paymentFor !== null}
-        today={data.today}
+        today={book.today}
         onClose={() => setPaymentFor(null)}
-        onSubmitted={(s) => notify(`Checked: ${s}. Design preview — payments aren’t saved yet.`, 'info')}
+        onRecord={(input) => {
+          const result = actions.recordPayment(input);
+          if (result.ok) {
+            const left = result.row.balance;
+            notify(
+              left > 0
+                ? `Payment recorded. ${formatAmount(toRupees(left))} still due on ${result.row.invoice.number}.`
+                : `Payment recorded. ${result.row.invoice.number} is now paid in full.`,
+            );
+          }
+          return result;
+        }}
       />
       <ToastRegion toast={toast} />
     </div>
   );
 }
 
-function PageHeading({ title, description, onNew }: { title: string; description: string; onNew: () => void }) {
+function PageHeading({ title, description, onNew, onReset }: { title: string; description: string; onNew: () => void; onReset: () => void }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 className="text-2xl font-semibold tracking-[-0.02em] text-fg sm:text-[1.75rem]">{title}</h1>
         <p className="mt-1 max-w-[60ch] text-sm text-fg-muted">{description}</p>
       </div>
-      <Button onClick={onNew}>
-        <Plus size={17} aria-hidden="true" /> New invoice
-      </Button>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="secondary" size="sm" onClick={onReset}>
+          <RotateCcw size={16} aria-hidden="true" /> Reset demo
+        </Button>
+        <Button onClick={onNew}>
+          <Plus size={17} aria-hidden="true" /> New invoice
+        </Button>
+      </div>
     </div>
   );
 }
@@ -131,15 +177,16 @@ function PageHeading({ title, description, onNew }: { title: string; description
 // ---------- Overview ----------
 
 interface OverviewProps {
-  rows: ReturnType<typeof invoiceRows>;
-  summary: ReturnType<typeof overview>;
+  rows: InvoiceRow[];
+  summary: InvoiceOverview;
   today: string;
   onOpen: (id: string) => void;
   onNew: () => void;
   onAll: () => void;
+  onReset: () => void;
 }
 
-function OverviewView({ rows, summary, today, onOpen, onNew, onAll }: OverviewProps) {
+function OverviewView({ rows, summary, today, onOpen, onNew, onAll, onReset }: OverviewProps) {
   const metrics: { label: string; value: number; caption: string; icon: LucideIcon; tone?: 'danger' }[] = [
     { label: 'Total invoiced', value: summary.invoiced, caption: `${pluralize(summary.invoicedCount, 'invoice')} sent`, icon: ReceiptText },
     { label: 'Payments collected', value: summary.collected, caption: `${pluralize(summary.paymentCount, 'payment')} received`, icon: Banknote },
@@ -148,11 +195,11 @@ function OverviewView({ rows, summary, today, onOpen, onNew, onAll }: OverviewPr
   ];
   const buckets = aging(rows, today);
   const largest = Math.max(1, ...buckets.map((b) => b.amount));
-  const overdue = rows.filter((r) => r.status === 'overdue').sort((a, b) => b.balance - a.balance);
+  const overdue = overdueRows(rows);
 
   return (
     <div className="space-y-6">
-      <PageHeading title="Overview" description="What you have invoiced, what has been paid and what is still owed." onNew={onNew} />
+      <PageHeading title="Overview" description="What you have invoiced, what has been paid and what is still owed." onNew={onNew} onReset={onReset} />
 
       <dl className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-4">
         {metrics.map((m) => (
@@ -168,7 +215,7 @@ function OverviewView({ rows, summary, today, onOpen, onNew, onAll }: OverviewPr
                 <m.icon size={16} aria-hidden="true" />
               </span>
             </dt>
-            <dd className="tabular mt-3 text-[1.65rem] leading-tight font-semibold tracking-[-0.02em] text-fg">{formatCurrency(m.value)}</dd>
+            <dd className="tabular mt-3 text-[1.65rem] leading-tight font-semibold tracking-[-0.02em] text-fg">{formatCurrency(toRupees(m.value))}</dd>
             <dd className={cn('mt-1 text-sm', m.tone === 'danger' && m.value > 0 ? 'text-danger-strong' : 'text-fg-muted')}>{m.caption}</dd>
           </div>
         ))}
@@ -187,7 +234,7 @@ function OverviewView({ rows, summary, today, onOpen, onNew, onAll }: OverviewPr
                   <div className="flex items-baseline justify-between gap-3 text-sm">
                     <span className="text-fg">{b.label}</span>
                     <span className="tabular text-fg-muted">
-                      <span className="font-semibold text-fg">{formatCurrency(b.amount)}</span> · {pluralize(b.count, 'invoice')}
+                      <span className="font-semibold text-fg">{formatCurrency(toRupees(b.amount))}</span> · {pluralize(b.count, 'invoice')}
                     </span>
                   </div>
                   <div className="mt-1.5 h-2 rounded-full bg-chart-track" aria-hidden="true">
@@ -219,7 +266,7 @@ function OverviewView({ rows, summary, today, onOpen, onNew, onAll }: OverviewPr
                           {r.invoice.number} · {pluralize(r.daysOverdue, 'day')} late
                         </span>
                       </span>
-                      <span className="tabular shrink-0 text-sm font-semibold text-fg">{formatAmount(r.balance)}</span>
+                      <span className="tabular shrink-0 text-sm font-semibold text-fg">{formatAmount(toRupees(r.balance))}</span>
                     </button>
                   </li>
                 ))}
@@ -234,7 +281,7 @@ function OverviewView({ rows, summary, today, onOpen, onNew, onAll }: OverviewPr
 
 // ---------- Invoice list ----------
 
-function InvoicesView({ rows, onOpen, onNew }: { rows: ReturnType<typeof invoiceRows>; onOpen: (id: string) => void; onNew: () => void }) {
+function InvoicesView({ rows, onOpen, onNew, onReset }: { rows: InvoiceRow[]; onOpen: (id: string) => void; onNew: () => void; onReset: () => void }) {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
   const searchId = useId();
@@ -243,7 +290,7 @@ function InvoicesView({ rows, onOpen, onNew }: { rows: ReturnType<typeof invoice
 
   return (
     <div className="space-y-6">
-      <PageHeading title="Invoices" description="Every invoice, newest first. Search by number or customer." onNew={onNew} />
+      <PageHeading title="Invoices" description="Every invoice, newest first. Search by number or customer." onNew={onNew} onReset={onReset} />
       <section aria-label="Invoice list" className="rounded-[var(--radius-panel)] border border-line bg-surface shadow-[var(--shadow-panel)]">
         <div className="flex flex-col gap-3 border-b border-line p-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative lg:w-72">

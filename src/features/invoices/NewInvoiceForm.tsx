@@ -3,8 +3,9 @@ import { ArrowLeft, Info, Plus, Trash2 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Panel';
 import { Field, FieldGroup, controlClass, describedBy, textareaClass } from '../../components/forms';
-import type { InvoiceCustomer, InvoiceLine } from '../../types/invoice';
-import { totalsFor } from './invoiceView';
+import type { InvoiceCustomer } from '../../types/invoice';
+import { STANDARD_GST_BASIS_POINTS, gstLabel, lineInputAmount, previewTotals, type FieldErrors, type NewInvoiceInput } from './invoiceLogic';
+import { toRupees } from './money';
 import { addDays } from '../../utils/dates';
 import { formatAmount, formatDate } from '../../utils/format';
 
@@ -13,8 +14,8 @@ interface Props {
   nextNumber: string;
   today: string;
   onCancel: () => void;
-  /** Design preview: called after validation; nothing is stored yet. */
-  onSubmitted: (summary: string, asDraft: boolean) => void;
+  /** Validates and creates the invoice; returns field errors if it was rejected. */
+  onCreate: (input: NewInvoiceInput) => { ok: true } | { ok: false; errors: FieldErrors };
 }
 
 interface DraftLine {
@@ -31,9 +32,9 @@ const terms = [
   { days: 30, label: 'Net 30' },
 ];
 
-const num = (s: string) => Number(s.replace(/[,\s₹]/g, ''));
+const money = (paise: number) => formatAmount(toRupees(paise));
 
-export function NewInvoiceForm({ customers, nextNumber, today, onCancel, onSubmitted }: Props) {
+export function NewInvoiceForm({ customers, nextNumber, today, onCancel, onCreate }: Props) {
   const id = useId();
   const [customerId, setCustomerId] = useState('');
   const [issueDate, setIssueDate] = useState(today);
@@ -47,10 +48,9 @@ export function NewInvoiceForm({ customers, nextNumber, today, onCancel, onSubmi
   const [nextKey, setNextKey] = useState(3);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const parsed: InvoiceLine[] = lines
-    .filter((l) => l.description.trim() && num(l.quantity) > 0 && num(l.rate) >= 0)
-    .map((l) => ({ description: l.description.trim(), quantity: num(l.quantity), rate: num(l.rate) }));
-  const totals = totalsFor(parsed, gst ? 0.18 : 0);
+  const gstBasisPoints = gst ? STANDARD_GST_BASIS_POINTS : 0;
+  // Same calculation the stored invoice uses, so the summary always matches the result.
+  const totals = previewTotals(lines, gstBasisPoints);
   const dueDate = addDays(issueDate || today, termDays);
 
   const updateLine = (key: number, patch: Partial<DraftLine>) => {
@@ -62,31 +62,27 @@ export function NewInvoiceForm({ customers, nextNumber, today, onCancel, onSubmi
     });
   };
 
-  const validate = (): Record<string, string> => {
-    const e: Record<string, string> = {};
-    if (!customerId) e.customer = 'Choose who this invoice is for.';
-    if (!issueDate) e.issueDate = 'Choose the invoice date.';
-    const filled = lines.filter((l) => l.description.trim() || l.rate.trim());
-    if (filled.length === 0) e.lines = 'Add at least one item.';
-    for (const l of filled) {
-      if (!l.description.trim()) e[`line-${l.key}`] = 'Describe the item.';
-      else if (!(num(l.quantity) > 0) || !Number.isFinite(num(l.quantity))) e[`line-${l.key}`] = 'Quantity must be more than zero.';
-      else if (!l.rate.trim() || !Number.isFinite(num(l.rate)) || num(l.rate) < 0) e[`line-${l.key}`] = 'Enter a rate in rupees.';
-    }
-    return e;
-  };
-
   const submit = (asDraft: boolean) => {
-    const e = validate();
-    setErrors(e);
-    const firstKey = Object.keys(e)[0];
-    if (firstKey) {
-      const target = firstKey === 'customer' ? `${id}-customer` : firstKey === 'issueDate' ? `${id}-issue` : firstKey === 'lines' ? `${id}-desc-${lines[0]?.key}` : `${id}-desc-${firstKey.slice(5)}`;
-      document.getElementById(target)?.focus();
-      return;
+    const result = onCreate({ customerId, issueDate, termsDays: termDays, gstBasisPoints, lines, notes, draft: asDraft });
+    if (result.ok) return;
+    // The rules report item problems by position; the form tracks rows by key.
+    const e: FieldErrors = {};
+    for (const [k, message] of Object.entries(result.errors)) {
+      const m = /^line-(\d+)$/.exec(k);
+      e[m ? `line-${lines[Number(m[1])]?.key}` : k] = message;
     }
-    const customer = customers.find((c) => c.id === customerId)?.name ?? '';
-    onSubmitted(`${nextNumber} for ${customer}, ${formatAmount(totals.total)}`, asDraft);
+    setErrors(e);
+    const order = ['customer', 'issueDate', 'terms', ...lines.map((l) => `line-${l.key}`), 'lines', 'gst', 'notes'];
+    const first = order.find((k) => e[k]);
+    const target: Record<string, string> = {
+      customer: `${id}-customer`,
+      issueDate: `${id}-issue`,
+      terms: `${id}-terms`,
+      lines: `${id}-desc-${lines[0]?.key}`,
+      gst: `${id}-gst`,
+      notes: `${id}-notes`,
+    };
+    if (first) document.getElementById(target[first] ?? `${id}-desc-${first.slice(5)}`)?.focus();
   };
 
   const sortedCustomers = [...customers].sort((a, b) => a.name.localeCompare(b.name));
@@ -156,19 +152,26 @@ export function NewInvoiceForm({ customers, nextNumber, today, onCancel, onSubmi
                     id={`${id}-issue`}
                     type="date"
                     value={issueDate}
-                    onChange={(e: { target: { value: string } }) => setIssueDate(e.target.value)}
+                    onChange={(e: { target: { value: string } }) => {
+                      setIssueDate(e.target.value);
+                      setErrors((p) => without(p, 'issueDate'));
+                    }}
                     className={controlClass(!!errors.issueDate)}
                     aria-invalid={!!errors.issueDate}
                     aria-describedby={describedBy(`${id}-issue`, errors.issueDate)}
                   />
                 </Field>
-                <Field id={`${id}-terms`} label="Payment terms" hint={`Due ${formatDate(dueDate)}`} className="sm:col-span-2 sm:max-w-[calc(50%-0.625rem)]">
+                <Field id={`${id}-terms`} label="Payment terms" error={errors.terms} hint={`Due ${formatDate(dueDate)}`} className="sm:col-span-2 sm:max-w-[calc(50%-0.625rem)]">
                   <select
                     id={`${id}-terms`}
                     value={termDays}
-                    onChange={(e: { target: { value: string } }) => setTermDays(Number(e.target.value))}
-                    className={controlClass()}
-                    aria-describedby={`${id}-terms-hint`}
+                    onChange={(e: { target: { value: string } }) => {
+                      setTermDays(Number(e.target.value));
+                      setErrors((p) => without(p, 'terms'));
+                    }}
+                    className={controlClass(!!errors.terms)}
+                    aria-invalid={!!errors.terms}
+                    aria-describedby={describedBy(`${id}-terms`, errors.terms, true)}
                   >
                     {terms.map((t) => (
                       <option key={t.days} value={t.days}>
@@ -191,7 +194,7 @@ export function NewInvoiceForm({ customers, nextNumber, today, onCancel, onSubmi
                 </div>
                 {lines.map((l, i) => {
                   const err = errors[`line-${l.key}`];
-                  const amount = num(l.quantity) * num(l.rate);
+                  const amount = lineInputAmount(l);
                   return (
                     <div key={l.key} className="rounded-[var(--radius-control)] border border-line p-3 @xl:border-0 @xl:p-0">
                       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 @xl:grid-cols-[minmax(0,1fr)_4rem_6.5rem_7rem_2.5rem] @xl:items-center">
@@ -236,7 +239,7 @@ export function NewInvoiceForm({ customers, nextNumber, today, onCancel, onSubmi
                         </div>
                         <p className="tabular text-right text-sm font-medium text-fg @max-xl:self-center @max-xl:text-left">
                           <span className="text-xs font-normal text-fg-muted @xl:sr-only">Amount </span>
-                          {Number.isFinite(amount) ? formatAmount(amount) : '—'}
+                          {amount === null ? '—' : money(amount)}
                         </p>
                         <div className="flex justify-end">
                           <button
@@ -276,24 +279,32 @@ export function NewInvoiceForm({ customers, nextNumber, today, onCancel, onSubmi
               <div className="space-y-5">
                 <label className="flex items-start gap-3 text-sm">
                   <input
+                    id={`${id}-gst`}
                     type="checkbox"
                     checked={gst}
-                    onChange={(e: { target: { checked: boolean } }) => setGst(e.target.checked)}
+                    onChange={(e: { target: { checked: boolean } }) => {
+                      setGst(e.target.checked);
+                      setErrors((p) => without(p, 'gst'));
+                    }}
                     className="mt-0.5 h-4 w-4 accent-[var(--accent)]"
                   />
                   <span>
-                    <span className="block font-medium text-fg">Add GST at 18%</span>
+                    <span className="block font-medium text-fg">Add GST at {gstLabel(STANDARD_GST_BASIS_POINTS)}</span>
                     <span className="block text-fg-muted">Turn off for items that are exempt.</span>
                   </span>
                 </label>
-                <Field id={`${id}-notes`} label="Notes for the customer" optional hint="Shown at the bottom of the invoice, e.g. bank details.">
+                <Field id={`${id}-notes`} label="Notes for the customer" optional error={errors.notes} hint="Shown at the bottom of the invoice, e.g. bank details.">
                   <textarea
                     id={`${id}-notes`}
                     rows={3}
                     value={notes}
-                    onChange={(e: { target: { value: string } }) => setNotes(e.target.value)}
-                    className={textareaClass()}
-                    aria-describedby={`${id}-notes-hint`}
+                    onChange={(e: { target: { value: string } }) => {
+                      setNotes(e.target.value);
+                      setErrors((p) => without(p, 'notes'));
+                    }}
+                    className={textareaClass(!!errors.notes)}
+                    aria-invalid={!!errors.notes}
+                    aria-describedby={describedBy(`${id}-notes`, errors.notes, true)}
                   />
                 </Field>
               </div>
@@ -307,15 +318,15 @@ export function NewInvoiceForm({ customers, nextNumber, today, onCancel, onSubmi
             <dl className="tabular mt-4 space-y-2 text-sm">
               <div className="flex justify-between gap-4">
                 <dt className="text-fg-muted">Subtotal</dt>
-                <dd className="text-fg">{formatAmount(totals.subtotal)}</dd>
+                <dd className="text-fg">{money(totals.subtotal)}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-fg-muted">GST {gst ? '(18%)' : '(not added)'}</dt>
-                <dd className="text-fg">{formatAmount(totals.tax)}</dd>
+                <dt className="text-fg-muted">GST {gst ? `(${gstLabel(gstBasisPoints)})` : '(not added)'}</dt>
+                <dd className="text-fg">{money(totals.gst)}</dd>
               </div>
               <div className="flex justify-between gap-4 border-t border-line pt-3 text-base font-semibold">
                 <dt className="text-fg">Total</dt>
-                <dd className="text-fg">{formatAmount(totals.total)}</dd>
+                <dd className="text-fg">{money(totals.total)}</dd>
               </div>
             </dl>
             <p className="mt-3 text-xs text-fg-muted">Due {formatDate(dueDate)}</p>
@@ -330,11 +341,18 @@ export function NewInvoiceForm({ customers, nextNumber, today, onCancel, onSubmi
             </div>
             <p className="mt-4 flex gap-2 text-xs text-fg-muted">
               <Info size={14} className="mt-px shrink-0" aria-hidden="true" />
-              Design preview: the form is checked, but invoices are not saved yet.
+              Demo: invoices are kept in this tab only and cleared when you reload or reset.
             </p>
           </Card>
         </aside>
       </form>
     </div>
   );
+}
+
+function without(errors: FieldErrors, key: string): FieldErrors {
+  if (!(key in errors)) return errors;
+  const next = { ...errors };
+  delete next[key];
+  return next;
 }

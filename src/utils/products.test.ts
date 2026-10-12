@@ -53,11 +53,11 @@ describe('product registry', () => {
     for (const p of products) if (p.status === 'live') expect(p.appUrl).toBeDefined();
   });
 
-  it('shows the invoice tracker as in development with a design preview, not a working demo', () => {
+  it('shows the invoice tracker as in development with a sample-data demo', () => {
     const tracker = getProductById('invoices')!;
     expect(tracker.status).toBe('in_build');
-    expect(tracker.demo?.kind).toBe('design-preview');
-    expect(productActions(tracker).primary).toEqual({ label: 'See preview', to: '/products/invoice-payment-tracker/try' });
+    expect(tracker.demo?.kind).toBe('interactive');
+    expect(productActions(tracker).primary).toEqual({ label: 'Try demo', to: '/products/invoice-payment-tracker/try' });
   });
 
   it('keeps Pulse in development even though it has a demo', () => {

@@ -115,13 +115,18 @@ export const products: readonly Product[] = [
       'Fewer evenings spent reconciling',
     ],
     features: [
-      'Invoice creation and tracking',
+      'Creating invoices with GST, sent straight away or saved as a draft',
       'Due dates and payment status for every invoice',
-      'Overdue invoice view',
-      'Recording full and part payments',
-      'Customer balances',
+      'Recording full and part payments, with every payment kept',
+      'Overdue invoices and unpaid balances by age',
+      'Searching and filtering invoices by status',
     ],
-    demo: { id: 'invoice-tracker', label: 'See the design preview', kind: 'design-preview' },
+    futureFeatures: [
+      'Customer balances and a customer list',
+      'Saving invoices to your own account',
+      'Sending invoices to customers',
+    ],
+    demo: { id: 'invoice-tracker', label: 'Try the invoice demo', kind: 'interactive' },
   },
   {
     id: 'leave',

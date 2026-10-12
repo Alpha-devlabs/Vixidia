@@ -20,7 +20,7 @@ const previews: Record<DemoId, { render: () => ReactNode; caption: string }> = {
   },
   'invoice-tracker': {
     render: () => <InvoicePreview />,
-    caption: 'A snapshot of the design preview. Open it to see the dashboard, invoice list, invoice details, the new-invoice form and recording a payment.',
+    caption: 'A snapshot of the demo. Open it to create invoices, record full or part payments and watch balances and statuses update.',
   },
 };
 

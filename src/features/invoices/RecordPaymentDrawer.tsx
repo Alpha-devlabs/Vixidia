@@ -1,10 +1,10 @@
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { Info } from 'lucide-react';
 import { Dialog } from '../../components/Dialog';
 import { Button } from '../../components/Button';
 import { Field, controlClass, describedBy, textareaClass } from '../../components/forms';
-import { paymentMethods } from '../../data/invoiceSample';
-import type { InvoiceRow } from './invoiceView';
+import { paymentMethods, type FieldErrors, type InvoiceRow, type PaymentInput } from './invoiceLogic';
+import { paiseToInput, toRupees } from './money';
 import { formatAmount, formatDate } from '../../utils/format';
 
 interface Props {
@@ -12,55 +12,38 @@ interface Props {
   open: boolean;
   today: string;
   onClose: () => void;
-  /** Design preview: called after validation; nothing is stored yet. */
-  onSubmitted: (summary: string) => void;
+  /** Validates and records the payment; returns field errors if it was rejected. */
+  onRecord: (input: PaymentInput) => { ok: true } | { ok: false; errors: FieldErrors };
 }
 
 /**
- * Record-payment drawer. In this design phase it validates the entry and reports
- * honestly that payments are not saved yet; the next phase connects it to the
- * payment records.
+ * Record-payment drawer. All rules (amount within the balance, date range, method)
+ * live in invoiceLogic.recordPayment; this form only shows its answers.
+ * A demo operation: the payment is recorded in memory and no money moves.
  */
-export function RecordPaymentDrawer({ row, open, today, onClose, onSubmitted }: Props) {
+export function RecordPaymentDrawer({ row, open, today, onClose, onRecord }: Props) {
   const id = useId();
   const formId = `${id}-form`;
-  const [amount, setAmount] = useState('');
+  // The parent remounts the drawer (new key) each time it opens, so these start fresh.
+  const [amount, setAmount] = useState(() => (row ? paiseToInput(row.balance) : ''));
   const [date, setDate] = useState(today);
   const [method, setMethod] = useState<string>('UPI');
   const [reference, setReference] = useState('');
-  const [errors, setErrors] = useState<{ amount?: string; date?: string }>({});
-
-  useEffect(() => {
-    if (open && row) {
-      setAmount(row.balance.toFixed(2));
-      setDate(today);
-      setMethod('UPI');
-      setReference('');
-      setErrors({});
-    }
-  }, [open, row, today]);
+  const [errors, setErrors] = useState<FieldErrors>({});
 
   if (!row) return null;
 
   const submit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    const next: typeof errors = {};
-    const value = Number(amount.replace(/[,\s₹]/g, ''));
-    if (!amount.trim()) next.amount = 'Enter the amount received.';
-    else if (!Number.isFinite(value) || value <= 0) next.amount = 'Enter an amount greater than zero.';
-    else if (!/^\d+(\.\d{1,2})?$/.test(amount.replace(/[,\s₹]/g, ''))) next.amount = 'Use rupees and paise only, like 12500.50.';
-    else if (value > row.balance + 0.001) next.amount = `This is more than the ${formatAmount(row.balance)} still due.`;
-    if (!date) next.date = 'Choose the date the payment arrived.';
-    else if (date > today) next.date = 'The payment date can’t be in the future.';
-    else if (date < row.invoice.issueDate) next.date = 'The payment can’t be earlier than the invoice date.';
-    setErrors(next);
-    const first = next.amount ? 'amount' : next.date ? 'date' : null;
-    if (first) {
-      document.getElementById(`${id}-${first}`)?.focus();
+    const result = onRecord({ invoiceId: row.invoice.id, amount, date, method, reference });
+    if (result.ok) {
+      setErrors({});
+      onClose();
       return;
     }
-    onSubmitted(`${formatAmount(value)} by ${method} for ${row.invoice.number}`);
-    onClose();
+    setErrors(result.errors);
+    const first = (['amount', 'date', 'method', 'ref'] as const).find((k) => result.errors[k === 'ref' ? 'reference' : k]);
+    if (first) document.getElementById(`${id}-${first}`)?.focus();
   };
 
   return (
@@ -83,9 +66,9 @@ export function RecordPaymentDrawer({ row, open, today, onClose, onSubmitted }: 
     >
       <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-[var(--radius-control)] border border-line bg-line text-sm sm:grid-cols-3">
         {[
-          ['Invoice total', formatAmount(row.totals.total)],
-          ['Paid so far', formatAmount(row.paid)],
-          ['Balance due', formatAmount(row.balance)],
+          ['Invoice total', formatAmount(toRupees(row.totals.total))],
+          ['Paid so far', formatAmount(toRupees(row.paid))],
+          ['Balance due', formatAmount(toRupees(row.balance))],
         ].map(([label, value]) => (
           <div key={label} className="flex items-baseline justify-between gap-3 bg-surface px-3 py-2.5 sm:block">
             <dt className="text-xs text-fg-muted">{label}</dt>
@@ -93,6 +76,12 @@ export function RecordPaymentDrawer({ row, open, today, onClose, onSubmitted }: 
           </div>
         ))}
       </dl>
+
+      {errors.invoice ? (
+        <p role="alert" className="mt-4 rounded-[var(--radius-control)] border border-danger/30 bg-danger-soft px-3 py-2.5 text-sm font-medium text-danger-strong">
+          {errors.invoice}
+        </p>
+      ) : null}
 
       <form id={formId} noValidate onSubmit={submit} className="mt-6 space-y-5">
         <Field id={`${id}-amount`} label="Amount received (₹)" error={errors.amount} hint="Defaults to the full balance due.">
@@ -103,7 +92,7 @@ export function RecordPaymentDrawer({ row, open, today, onClose, onSubmitted }: 
             value={amount}
             onChange={(e: { target: { value: string } }) => {
               setAmount(e.target.value);
-              setErrors((p) => ({ ...p, amount: undefined }));
+              setErrors((p) => without(p, 'amount'));
             }}
             className={controlClass(!!errors.amount, 'tabular')}
             aria-invalid={!!errors.amount}
@@ -120,19 +109,24 @@ export function RecordPaymentDrawer({ row, open, today, onClose, onSubmitted }: 
               min={row.invoice.issueDate}
               onChange={(e: { target: { value: string } }) => {
                 setDate(e.target.value);
-                setErrors((p) => ({ ...p, date: undefined }));
+                setErrors((p) => without(p, 'date'));
               }}
               className={controlClass(!!errors.date)}
               aria-invalid={!!errors.date}
               aria-describedby={describedBy(`${id}-date`, errors.date)}
             />
           </Field>
-          <Field id={`${id}-method`} label="Method">
+          <Field id={`${id}-method`} label="Method" error={errors.method}>
             <select
               id={`${id}-method`}
               value={method}
-              onChange={(e: { target: { value: string } }) => setMethod(e.target.value)}
-              className={controlClass()}
+              onChange={(e: { target: { value: string } }) => {
+                setMethod(e.target.value);
+                setErrors((p) => without(p, 'method'));
+              }}
+              className={controlClass(!!errors.method)}
+              aria-invalid={!!errors.method}
+              aria-describedby={describedBy(`${id}-method`, errors.method)}
             >
               {paymentMethods.map((m) => (
                 <option key={m} value={m}>
@@ -142,22 +136,33 @@ export function RecordPaymentDrawer({ row, open, today, onClose, onSubmitted }: 
             </select>
           </Field>
         </div>
-        <Field id={`${id}-ref`} label="Reference" optional hint="UPI reference, cheque number or bank transaction ID.">
+        <Field id={`${id}-ref`} label="Reference" optional error={errors.reference} hint="UPI reference, cheque number or bank transaction ID.">
           <textarea
             id={`${id}-ref`}
             rows={2}
             value={reference}
-            onChange={(e: { target: { value: string } }) => setReference(e.target.value)}
-            className={textareaClass(false, 'min-h-16')}
-            aria-describedby={`${id}-ref-hint`}
+            onChange={(e: { target: { value: string } }) => {
+              setReference(e.target.value);
+              setErrors((p) => without(p, 'reference'));
+            }}
+            className={textareaClass(!!errors.reference, 'min-h-16')}
+            aria-invalid={!!errors.reference}
+            aria-describedby={describedBy(`${id}-ref`, errors.reference, true)}
           />
         </Field>
       </form>
 
       <p className="mt-6 flex gap-2 rounded-[var(--radius-control)] bg-subtle px-3 py-2.5 text-sm text-fg-muted">
         <Info size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-        Design preview: the entry is checked, but payments are not saved yet. Invoice issued {formatDate(row.invoice.issueDate)}.
+        Demo: the payment is recorded in this tab only and no money moves. Invoice issued {formatDate(row.invoice.issueDate)}.
       </p>
     </Dialog>
   );
+}
+
+function without(errors: FieldErrors, key: string): FieldErrors {
+  if (!(key in errors)) return errors;
+  const next = { ...errors };
+  delete next[key];
+  return next;
 }

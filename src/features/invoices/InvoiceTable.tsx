@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react';
-import type { InvoiceRow } from './invoiceView';
+import type { InvoiceRow } from './invoiceLogic';
+import { toRupees } from './money';
 import { InvoiceStatusBadge } from './InvoiceStatusBadge';
 import { formatAmount, formatDate, pluralize } from '../../utils/format';
 
@@ -11,8 +12,9 @@ interface Props {
 }
 
 function dueNote(r: InvoiceRow): string | null {
-  if (r.status === 'overdue') return `${pluralize(r.daysOverdue, 'day')} late`;
-  if (r.status === 'partially_paid') return `${formatAmount(r.balance)} left`;
+  const left = `${formatAmount(toRupees(r.balance))} left`;
+  if (r.status === 'overdue') return r.paid > 0 ? `${pluralize(r.daysOverdue, 'day')} late · ${left}` : `${pluralize(r.daysOverdue, 'day')} late`;
+  if (r.status === 'partially_paid') return left;
   return null;
 }
 
@@ -63,7 +65,7 @@ export function InvoiceTable({ rows, onOpen, caption }: Props) {
                     ) : null}
                   </td>
                   <td className="tabular hidden px-3 py-3 whitespace-nowrap text-fg-muted @3xl:table-cell">{formatDate(r.invoice.issueDate)}</td>
-                  <td className="tabular px-3 py-3 text-right font-medium whitespace-nowrap text-fg">{formatAmount(r.totals.total)}</td>
+                  <td className="tabular px-3 py-3 text-right font-medium whitespace-nowrap text-fg">{formatAmount(toRupees(r.totals.total))}</td>
                   <td className="px-3 py-3">
                     <InvoiceStatusBadge status={r.status} />
                   </td>
@@ -98,7 +100,7 @@ export function InvoiceTable({ rows, onOpen, caption }: Props) {
                     {note ? <span className={r.status === 'overdue' ? 'text-xs text-danger-strong' : 'text-xs text-fg-subtle'}>{note}</span> : null}
                   </span>
                 </span>
-                <span className="tabular shrink-0 pt-0.5 text-right font-semibold text-fg">{formatAmount(r.totals.total)}</span>
+                <span className="tabular shrink-0 pt-0.5 text-right font-semibold text-fg">{formatAmount(toRupees(r.totals.total))}</span>
               </button>
             </li>
           );
