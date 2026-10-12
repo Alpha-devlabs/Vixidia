@@ -105,7 +105,7 @@ function TargetDialog({ open, onClose, target30, onSave }: DialogProps) {
       open={open}
       onClose={onClose}
       title="Revenue target"
-      description="Set a target for every 30 days. Pulse scales it for 7- and 90-day periods."
+      description="Set a target for every 30 days. It is scaled for the 7- and 90-day periods."
       footer={
         <>
           <Button variant="subtle" onClick={onClose}>

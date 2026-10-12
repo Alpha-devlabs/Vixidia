@@ -35,7 +35,7 @@ const sections: { id: string; label: string; icon: LucideIcon }[] = [
 
 const DEFAULT_DAYS: PeriodDays = 30;
 
-/** The Pulse sample-data analytics dashboard. All state is local to this component tree. */
+/** The Business Analytics sample-data dashboard (internal name: Pulse). All state is local to this component tree. */
 export function PulseDemo() {
   const { state, actions, toast } = usePulseDemo();
   const [days, setDays] = useState<PeriodDays>(DEFAULT_DAYS);
@@ -63,11 +63,11 @@ export function PulseDemo() {
       <aside className="on-inverse border-b border-inverse-line bg-inverse text-on-inverse lg:w-56 lg:shrink-0 lg:border-r lg:border-b-0">
         <div className="flex flex-col gap-4 px-4 py-4 lg:sticky lg:top-14 lg:px-5 lg:py-6">
           <div className="flex items-center justify-between gap-3 lg:block">
-            <p className="flex items-center gap-2 text-lg font-bold tracking-[-0.02em]">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-accent text-on-accent">
+            <p className="flex items-center gap-2 text-lg leading-tight font-bold tracking-[-0.02em]">
+              <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-accent text-on-accent">
                 <Activity size={17} strokeWidth={2.4} aria-hidden="true" />
               </span>
-              Pulse
+              Business Analytics
             </p>
             <p className="text-xs text-on-inverse-muted lg:mt-3">
               <span className="block text-on-inverse-muted max-lg:sr-only">Sample business</span>

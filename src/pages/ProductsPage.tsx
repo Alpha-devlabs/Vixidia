@@ -12,7 +12,7 @@ import type { ProductStatus } from '../types/product';
 const statusOrder: ProductStatus[] = ['live', 'in_build', 'planned'];
 
 export function ProductsPage() {
-  usePageMeta('Products', 'Practical tools for small businesses: Pulse, Tasks & Follow-ups, Simple CRM, Invoice & Payment Tracker, and Leave & Attendance.');
+  usePageMeta('Products', 'Practical tools for small businesses: Business Analytics, Tasks & Follow-ups, Simple CRM, Invoice & Payment Tracker, and Leave & Attendance.');
   const usedStatuses = statusOrder.filter((s) => products.some((p) => p.status === s));
 
   return (

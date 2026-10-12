@@ -139,7 +139,7 @@ export function HomePage() {
                   </h3>
                   <StatusBadge status={pulse.status} />
                 </div>
-                <p className="mt-2 max-w-[52ch] text-fg-muted">{pulse.summary} Our first interactive demo, running on fictional sample data.</p>
+                <p className="mt-2 max-w-[52ch] text-fg-muted">{pulse.summary} Interactive demo with sample data.</p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <ButtonLink to={demoPath(pulse)} size="sm">
                     Try the demo

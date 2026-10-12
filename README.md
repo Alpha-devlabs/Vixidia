@@ -1,6 +1,6 @@
 # Vixidia website
 
-Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Pulse** (business insights and analytics) at `/products/pulse/try` and an interactive sample-data demo of the **Invoice & Payment Tracker** at `/products/invoice-payment-tracker/try`.
+Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and an interactive sample-data demo of the **Invoice & Payment Tracker** at `/products/invoice-payment-tracker/try`.
 
 Stack: React 19, TypeScript (strict), Vite, React Router 7, Tailwind CSS 4, Lucide icons, Vitest.
 
@@ -17,7 +17,7 @@ npm run dev        # http://localhost:5173
 | `npm run build` | Type-check, then production build into `dist/` |
 | `npm run preview` | Serve the production build locally |
 | `npm run typecheck` | Strict TypeScript check only |
-| `npm test` | Unit tests (product registry, Pulse calculations, inquiry validation) |
+| `npm test` | Unit tests (product registry, Business Analytics calculations, invoice rules, inquiry validation) |
 | `npm run lint` | ESLint |
 
 ## Where things live
@@ -29,7 +29,7 @@ src/
   config/         brand.ts (name, tagline), products.ts (product registry), routes.ts
   data/           pulseSample.ts — the fictional sample business for the demo
   features/
-    pulse/        Pulse demo: pure logic (pulseLogic.ts), state hook, dashboard components
+    pulse/        Business Analytics demo (internal name Pulse): pure logic (pulseLogic.ts), state hook, dashboard components
     inquiry/      Inquiry validation and the submission adapter
   hooks/          usePageMeta (document title + meta description)
   pages/          One component per route
@@ -121,9 +121,11 @@ Open questions, not decided in code:
 - Discounts, credit notes and overpayments.
 - Editing or deleting payments.
 
-## The Pulse demo
+## The Business Analytics demo
 
-Pulse is **business insights and analytics**: it shows how a business is performing, not how to run its finances. Invoices, due dates, payments and customer balances belong to the separate Invoice & Payment Tracker.
+**Business Analytics** was previously called Pulse. Only user-facing names changed. The product id, URL slug (`/products/pulse`, `/products/pulse/try`), the `src/features/pulse/` folder and component names such as `PulseDemo` keep the old name, so existing links, imports and tests still work.
+
+Business Analytics is about **business performance**: it shows how a business is performing, not how to run its finances. Invoices, due dates, payments and customer balances belong to the separate Invoice & Payment Tracker.
 
 The demo summarises a fictional business, “Harbor & Pine Supply Co.”, which sells homeware, stationery, gifts and gift services.
 
@@ -159,7 +161,7 @@ The app is a static single-page app. The host must serve `index.html` for unknow
 
 ## Honest-by-design notes
 
-- Pulse is labelled **In development**, not live, even though its demo works. The other four products are planned concepts.
+- Business Analytics is labelled **In development**, not live, even though its demo works. The other four products are planned concepts.
 - The inquiry form does not send anything yet and says so on the form and the confirmation page.
 - The privacy page is marked as a draft that needs review before launch.
 - No trademark or domain clearance has been checked for the name “Vixidia”.

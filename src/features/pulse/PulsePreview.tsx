@@ -26,7 +26,7 @@ const previewNav: { icon: LucideIcon; label: string }[] = [
   { icon: ChartPie, label: 'Breakdown' },
 ];
 
-/** Read-only snapshot of the Pulse overview for the product page, from the demo's sample data. */
+/** Read-only snapshot of the Business Analytics overview for the product page, from the demo's sample data. */
 export function PulsePreview() {
   const { summary, series } = usePreviewData();
   return (
@@ -34,7 +34,7 @@ export function PulsePreview() {
       <div className="flex">
         <div className="hidden w-40 shrink-0 flex-col gap-1 bg-inverse p-3 text-on-inverse sm:flex" aria-hidden="true">
           <p className="mb-3 flex items-center gap-1.5 px-1 text-sm font-bold">
-            <Activity size={15} className="text-on-inverse" /> Pulse
+            <Activity size={15} className="shrink-0 text-on-inverse" /> Business Analytics
           </p>
           {previewNav.map(({ icon: Icon, label }, i) => (
             <span
@@ -64,7 +64,7 @@ export function PulsePreview() {
   );
 }
 
-/** A small homepage glimpse of Pulse: three figures, a revenue sparkline and one insight. */
+/** A small homepage glimpse of Business Analytics: three figures, a revenue sparkline and one insight. */
 export function PulseSnapshot() {
   const { summary, series, insight } = usePreviewData();
   const { current } = summary;

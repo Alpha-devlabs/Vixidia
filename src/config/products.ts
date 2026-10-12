@@ -5,24 +5,27 @@ import type { Product } from '../types/product';
  * The product registry: the single source of truth for listings, cards,
  * detail pages, demo routes and calls to action.
  *
- * Statuses are deliberately honest. Pulse has a sample-data demo but is
- * still in development, so it is `in_build`, not `live`.
+ * Statuses are deliberately honest. Business Analytics has a sample-data demo
+ * but is still in development, so it is `in_build`, not `live`.
+ *
+ * Business Analytics keeps the id and slug `pulse` (its earlier name) so existing
+ * links (/products/pulse), imports and tests keep working; only labels changed.
  */
 export const products: readonly Product[] = [
   {
     id: 'pulse',
     slug: 'pulse',
-    name: 'Pulse',
-    kind: 'Business insights & analytics',
+    name: 'Business Analytics',
+    kind: 'Sales & performance insights',
     question: 'How is my business performing?',
     status: 'in_build',
     icon: Activity,
-    summary: 'Sales trends, key numbers and plain-language insights that show how your business is doing.',
+    summary: 'Understand sales, revenue, orders, and business performance.',
     tagline: 'See how your business is performing — and what is changing.',
     problem:
       'Most small businesses have the numbers somewhere, but not the picture. Knowing whether this month is better than last, which products are growing, or whether you are on track for a target means rebuilding the same spreadsheet by hand.',
     description:
-      'Pulse turns your sales activity into a clear performance dashboard: trends over the period you choose, comparisons with the period before, a breakdown of what is selling, progress toward a target and a few plain observations about what has changed.',
+      'A practical business analytics solution that helps small businesses explore sales trends, track key performance indicators, compare products and categories, and monitor progress toward revenue targets.',
     audience: ['Owner-run businesses', 'Shops and online sellers', 'Small teams', 'Service businesses'],
     benefits: [
       'Understand at a glance whether the business is growing or slowing',
@@ -43,7 +46,7 @@ export const products: readonly Product[] = [
       'Weekly performance summaries',
       'Shared dashboards for team members',
     ],
-    demo: { id: 'pulse-dashboard', label: 'Try the Pulse demo', kind: 'interactive' },
+    demo: { id: 'pulse-dashboard', label: 'Try the demo', kind: 'interactive' },
   },
   {
     id: 'tasks',

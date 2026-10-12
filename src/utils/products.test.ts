@@ -15,7 +15,7 @@ describe('product registry', () => {
 
   it('lists exactly the five initial products, in order', () => {
     expect(products.map((p) => p.name)).toEqual([
-      'Pulse',
+      'Business Analytics',
       'Tasks & Follow-ups',
       'Simple CRM',
       'Invoice & Payment Tracker',
@@ -30,11 +30,17 @@ describe('product registry', () => {
     }
   });
 
-  it('positions Pulse as analytics, separate from invoicing', () => {
+  it('names the analytics product Business Analytics and keeps it separate from invoicing', () => {
+    // Internal id and slug stay `pulse` (its earlier name) so existing links keep working.
     const pulse = getProductById('pulse')!;
-    expect(pulse.kind).toBe('Business insights & analytics');
+    expect(pulse.name).toBe('Business Analytics');
+    expect(pulse.slug).toBe('pulse');
+    expect(pulse.summary).toBe('Understand sales, revenue, orders, and business performance.');
+    expect(pulse.demo?.label).toBe('Try the demo');
+    expect(productActions(pulse).primary).toEqual({ label: 'Try demo', to: '/products/pulse/try' });
     const pulseText = [pulse.summary, pulse.tagline, pulse.description, ...pulse.features, ...pulse.benefits].join(' ');
     expect(/invoice|payment|paid|outstanding|overdue|owes|balance|accounting/i.test(pulseText)).toBe(false);
+    expect(/\bAI\b|artificial intelligence|real[- ]time|machine learning/i.test(pulseText)).toBe(false);
   });
 
   it('gives invoicing and payments to the Invoice & Payment Tracker', () => {
@@ -60,7 +66,7 @@ describe('product registry', () => {
     expect(productActions(tracker).primary).toEqual({ label: 'Try demo', to: '/products/invoice-payment-tracker/try' });
   });
 
-  it('keeps Pulse in development even though it has a demo', () => {
+  it('keeps Business Analytics in development even though it has a demo', () => {
     const pulse = getProductById('pulse');
     expect(pulse?.status).toBe('in_build');
     expect(pulse?.demo).toBeDefined();
