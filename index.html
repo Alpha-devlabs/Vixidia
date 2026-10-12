@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f6f8" />
+    <script>
+      // Apply the saved or system theme before first paint (see src/theme/theme.ts).
+      (function () {
+        var theme = 'light';
+        try {
+          var saved = localStorage.getItem('vixidia-theme');
+          if (saved === 'light' || saved === 'dark') theme = saved;
+          else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark';
+        } catch (e) {}
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+    <meta
+      name="description"
+      content="Vixidia builds practical software for small businesses and teams. Explore our products, try the Pulse dashboard demo, or ask about custom software."
+    />
+    <title>Vixidia — Practical software for small businesses</title>
+  </head>
+  <body>
+    <noscript>This site needs JavaScript to run its interactive demos.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
