@@ -100,6 +100,7 @@ describe('paths and actions', () => {
   const pulse = getProductById('pulse')!;
   const crm = getProductById('crm')!;
   const tasks = getProductById('tasks')!;
+  const leave = getProductById('leave')!;
 
   it('builds product and demo paths under /products', () => {
     expect(productPath(pulse)).toBe('/products/pulse');
@@ -113,8 +114,8 @@ describe('paths and actions', () => {
   });
 
   it('offers only the concept page for planned products', () => {
-    const { primary, secondary } = productActions(tasks);
-    expect(primary).toEqual({ label: 'View concept', to: '/products/tasks-follow-ups' });
+    const { primary, secondary } = productActions(leave);
+    expect(primary).toEqual({ label: 'View concept', to: '/products/leave-attendance' });
     expect(secondary).toBeUndefined();
   });
 
@@ -127,6 +128,19 @@ describe('paths and actions', () => {
       primary: { label: 'Try demo', to: '/products/simple-crm/try' },
       secondary: { label: 'View details', to: '/products/simple-crm' },
     });
+  });
+
+  it('shows Tasks & Follow-ups as in development with a sample-data demo, on its existing slug', () => {
+    expect(tasks).toMatchObject({ name: 'Tasks & Follow-ups', slug: 'tasks-follow-ups', kind: 'Productivity', status: 'in_build' });
+    expect(tasks.summary).toBe('Keep tasks organized and follow-ups on track.');
+    expect(tasks.description).toBe('Organize daily work, track deadlines, and keep important customer follow-ups from slipping through the cracks.');
+    expect(tasks.demo).toEqual({ id: 'tasks', label: 'Try the demo', kind: 'interactive' });
+    expect(productActions(tasks).primary).toEqual({ label: 'Try demo', to: '/products/tasks-follow-ups/try' });
+  });
+
+  it('makes no claims about reminders, notifications or integrations for tasks', () => {
+    const text = [tasks.summary, tasks.description, tasks.tagline, ...tasks.features, ...tasks.benefits].join(' ');
+    expect(/remind|notif|real[- ]time|integrat|sync|automat|calendar|owner/i.test(text)).toBe(false);
   });
 
   it('keeps the CRM separate from analytics, invoicing and tasks', () => {

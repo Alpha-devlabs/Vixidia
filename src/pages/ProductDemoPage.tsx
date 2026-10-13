@@ -9,6 +9,7 @@ import { ThemeToggle } from '../theme/ThemeToggle';
 import { PulseDemo } from '../features/pulse/PulseDemo';
 import { InvoiceTracker } from '../features/invoices/InvoiceTracker';
 import { CrmApp } from '../features/crm/CrmApp';
+import { TasksApp } from '../features/tasks/TasksApp';
 import { brand } from '../config/brand';
 import { paths } from '../config/routes';
 import { getProductBySlug, productPath } from '../utils/products';
@@ -19,6 +20,7 @@ const demos: Record<DemoId, () => ReactNode> = {
   'pulse-dashboard': () => <PulseDemo />,
   'invoice-tracker': () => <InvoiceTracker />,
   crm: () => <CrmApp />,
+  tasks: () => <TasksApp />,
 };
 
 export function ProductDemoPage() {

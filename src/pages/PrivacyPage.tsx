@@ -21,8 +21,8 @@ const sections = [
   {
     title: 'Product demos and previews',
     body: [
-      'Demos such as Business Analytics, the Invoice & Payment Tracker and Simple CRM use a fictional business and invented records. Changes you make, including invoices, payments, customers and interactions you add, are held in the page’s memory only and are discarded when you reload or close the tab.',
-      'Demos do not use local storage, cookies or any network requests to save your changes. Recording a payment in a demo does not move any money, and logging a customer interaction does not send any email or message.',
+      'Demos such as Business Analytics, the Invoice & Payment Tracker, Simple CRM and Tasks & Follow-ups use a fictional business and invented records. Changes you make, including invoices, payments, customers, interactions and tasks you add, are held in the page’s memory only and are discarded when you reload or close the tab.',
+      'Demos do not use local storage, cookies or any network requests to save your changes. Recording a payment in a demo does not move any money, logging a customer interaction does not send any email or message, and tasks never send reminders or notifications.',
     ],
   },
   {

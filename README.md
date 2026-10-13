@@ -1,6 +1,6 @@
 # Vixidia website
 
-Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** at `/products/invoice-payment-tracker/try` and **Simple CRM** at `/products/simple-crm/try`.
+Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`) and **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`).
 
 Stack: React 19, TypeScript (strict), Vite, React Router 7, Tailwind CSS 4, Lucide icons, Vitest.
 
@@ -17,7 +17,7 @@ npm run dev        # http://localhost:5173
 | `npm run build` | Type-check, then production build into `dist/` |
 | `npm run preview` | Serve the production build locally |
 | `npm run typecheck` | Strict TypeScript check only |
-| `npm test` | Unit tests (product registry, Business Analytics calculations, invoice rules, CRM rules, inquiry validation) |
+| `npm test` | Unit tests (product registry, Business Analytics calculations, invoice, CRM and task rules, inquiry validation) |
 | `npm run lint` | ESLint |
 
 ## Where things live
@@ -31,6 +31,7 @@ src/
   features/
     pulse/        Business Analytics demo (internal name Pulse): pure logic (pulseLogic.ts), state hook, dashboard components
     crm/          Simple CRM demo: rules (crmLogic.ts), state hook, directory, profile, forms
+    tasks/        Tasks & Follow-ups demo: rules (taskLogic.ts), state hook, list, form, detail drawer
     inquiry/      Inquiry validation and the submission adapter
   hooks/          usePageMeta (document title + meta description)
   pages/          One component per route
@@ -142,6 +143,22 @@ Rules:
 
 Out of scope for this phase: persistence, deleting customers or interactions, importing, team access, and any link to invoices or Business Analytics.
 
+## Tasks & Follow-ups (demo, Phase 0)
+
+`src/features/tasks/` is a design-first task manager. It has an overview, a task list, a Follow-ups view, create and edit forms, and a details drawer. It runs on fictional tasks from `src/data/tasksSample.ts`, held in memory by `useTasksDemo.ts` (the same pattern as the other demos). **Reset demo** or a reload restores the sample data. Nothing is sent: there are no reminders, notifications or calendar links.
+
+Date rules live in `taskLogic.ts`. Dates are calendar days compared as `YYYY-MM-DD` strings, so time zones cannot shift them.
+- **Completed:** status is Completed, whatever the due date. A completed task is never overdue.
+- **Overdue:** open (To do or In progress) and due before today.
+- **Due today:** open and due today.
+- **Upcoming:** open and due after today. The list splits this into *Next 7 days* and *Later*.
+
+Other behaviour:
+- **Filters and search:** filters for status, priority and category all apply together. Search covers the title, the description and the linked customer.
+- **Sorting:** sort by due date (the default), priority or title. Completed tasks always come last, most recently completed first.
+- **Completing and reopening:** completing a task records today as its completion date. Reopening clears that date and sets the task back to To do.
+- **Follow-ups:** a follow-up is a task in the Follow-up category, not a separate system. A task can optionally link to one of the Simple CRM demo's sample customers by id. The customer list is read from `crmSample.ts`, never copied or changed. The two demos don't sync, and the CRM profile is not linked, because the CRM demo has no per-customer URL.
+
 ## The Business Analytics demo
 
 **Business Analytics** was previously called Pulse. Only user-facing names changed. The product id, URL slug (`/products/pulse`, `/products/pulse/try`), the `src/features/pulse/` folder and component names such as `PulseDemo` keep the old name, so existing links, imports and tests still work.
@@ -182,7 +199,7 @@ The app is a static single-page app. The host must serve `index.html` for unknow
 
 ## Honest-by-design notes
 
-- Business Analytics, the Invoice & Payment Tracker and Simple CRM are labelled **In development**, not live, even though their demos work. Tasks & Follow-ups and Leave & Attendance are planned concepts.
+- Business Analytics, the Invoice & Payment Tracker, Simple CRM and Tasks & Follow-ups are labelled **In development**, not live, even though their demos work. Leave & Attendance is a planned concept.
 - The inquiry form does not send anything yet and says so on the form and the confirmation page.
 - The privacy page is marked as a draft that needs review before launch.
 - No trademark or domain clearance has been checked for the name “Vixidia”.

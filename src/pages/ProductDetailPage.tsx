@@ -8,6 +8,7 @@ import { NotFoundContent } from './NotFoundPage';
 import { PulsePreview } from '../features/pulse/PulsePreview';
 import { InvoicePreview } from '../features/invoices/InvoicePreview';
 import { CrmPreview } from '../features/crm/CrmPreview';
+import { TasksPreview } from '../features/tasks/TasksPreview';
 import { paths } from '../config/routes';
 import { demoPath, getProductBySlug, hasDemo, interestPath, statusInfo } from '../utils/products';
 import type { DemoId, Product } from '../types/product';
@@ -26,6 +27,10 @@ const previews: Record<DemoId, { render: () => ReactNode; caption: string }> = {
   crm: {
     render: () => <CrmPreview />,
     caption: 'A snapshot of the demo’s customer directory. Open it to search customers, view profiles and their history, and add or edit records.',
+  },
+  tasks: {
+    render: () => <TasksPreview />,
+    caption: 'A snapshot of today’s and overdue tasks. Open the demo to filter, create, edit and complete tasks.',
   },
 };
 
