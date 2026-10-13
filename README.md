@@ -1,6 +1,6 @@
 # Vixidia website
 
-Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and an interactive sample-data demo of the **Invoice & Payment Tracker** at `/products/invoice-payment-tracker/try`.
+Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** at `/products/invoice-payment-tracker/try` and **Simple CRM** at `/products/simple-crm/try`.
 
 Stack: React 19, TypeScript (strict), Vite, React Router 7, Tailwind CSS 4, Lucide icons, Vitest.
 
@@ -17,7 +17,7 @@ npm run dev        # http://localhost:5173
 | `npm run build` | Type-check, then production build into `dist/` |
 | `npm run preview` | Serve the production build locally |
 | `npm run typecheck` | Strict TypeScript check only |
-| `npm test` | Unit tests (product registry, Business Analytics calculations, invoice rules, inquiry validation) |
+| `npm test` | Unit tests (product registry, Business Analytics calculations, invoice rules, CRM rules, inquiry validation) |
 | `npm run lint` | ESLint |
 
 ## Where things live
@@ -30,6 +30,7 @@ src/
   data/           pulseSample.ts — the fictional sample business for the demo
   features/
     pulse/        Business Analytics demo (internal name Pulse): pure logic (pulseLogic.ts), state hook, dashboard components
+    crm/          Simple CRM demo: rules (crmLogic.ts), state hook, directory, profile, forms
     inquiry/      Inquiry validation and the submission adapter
   hooks/          usePageMeta (document title + meta description)
   pages/          One component per route
@@ -121,6 +122,26 @@ Open questions, not decided in code:
 - Discounts, credit notes and overpayments.
 - Editing or deleting payments.
 
+## Simple CRM (demo, Phase 0)
+
+`src/features/crm/` is a design-first demo for customer management: an overview, a customer directory, customer profiles, add and edit forms, and an interaction log. It runs on fictional records from `src/data/crmSample.ts`, held in memory by `useCrmDemo.ts` (the same pattern as the invoice demo). Nothing is saved, and no email, message or call is ever made. **Reset demo** or a reload restores the sample data.
+
+| File | Role |
+| --- | --- |
+| `crmLogic.ts` | Rules shared by every screen: derived rows, overview counts, search and filter, plus the pure `createCustomer`, `updateCustomer` and `addInteraction` functions, which return a new book or field errors. |
+| `CrmApp.tsx` | The shell: sidebar, overview, directory and view switching. |
+| `CustomerTable`, `CustomerProfile`, `CustomerForm`, `LogInteractionDrawer` | The screens. They show the rules' results and hold no rules of their own. |
+
+Rules:
+- **Statuses:** prospect, active or inactive.
+- **Required fields:** a name, plus an email or a phone number.
+- **Email:** must look like an address and must be unique across customers.
+- **Phone:** any country's format, 6–15 digits, with an optional leading `+`.
+- **Tags:** comma-separated, saved in lower case with duplicates removed, up to 8.
+- **"No recent contact":** a prospect or active customer whose last interaction, or the day they were added if there is none, was more than 30 days ago. Inactive customers are never flagged. This describes the data and does not schedule anything; reminders belong to Tasks & Follow-ups.
+
+Out of scope for this phase: persistence, deleting customers or interactions, importing, team access, and any link to invoices or Business Analytics.
+
 ## The Business Analytics demo
 
 **Business Analytics** was previously called Pulse. Only user-facing names changed. The product id, URL slug (`/products/pulse`, `/products/pulse/try`), the `src/features/pulse/` folder and component names such as `PulseDemo` keep the old name, so existing links, imports and tests still work.
@@ -161,7 +182,7 @@ The app is a static single-page app. The host must serve `index.html` for unknow
 
 ## Honest-by-design notes
 
-- Business Analytics is labelled **In development**, not live, even though its demo works. The other four products are planned concepts.
+- Business Analytics, the Invoice & Payment Tracker and Simple CRM are labelled **In development**, not live, even though their demos work. Tasks & Follow-ups and Leave & Attendance are planned concepts.
 - The inquiry form does not send anything yet and says so on the form and the confirmation page.
 - The privacy page is marked as a draft that needs review before launch.
 - No trademark or domain clearance has been checked for the name “Vixidia”.

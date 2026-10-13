@@ -99,6 +99,7 @@ describe('slug resolution', () => {
 describe('paths and actions', () => {
   const pulse = getProductById('pulse')!;
   const crm = getProductById('crm')!;
+  const tasks = getProductById('tasks')!;
 
   it('builds product and demo paths under /products', () => {
     expect(productPath(pulse)).toBe('/products/pulse');
@@ -112,9 +113,25 @@ describe('paths and actions', () => {
   });
 
   it('offers only the concept page for planned products', () => {
-    const { primary, secondary } = productActions(crm);
-    expect(primary).toEqual({ label: 'View concept', to: '/products/simple-crm' });
+    const { primary, secondary } = productActions(tasks);
+    expect(primary).toEqual({ label: 'View concept', to: '/products/tasks-follow-ups' });
     expect(secondary).toBeUndefined();
+  });
+
+  it('shows Simple CRM as in development with a sample-data demo', () => {
+    expect(crm).toMatchObject({ name: 'Simple CRM', slug: 'simple-crm', kind: 'Customer Management', status: 'in_build' });
+    expect(crm.summary).toBe('Keep customer relationships organized.');
+    expect(crm.description).toBe('Manage customer details, track interactions, and keep important relationship information in one convenient place.');
+    expect(crm.demo).toEqual({ id: 'crm', label: 'Try the demo', kind: 'interactive' });
+    expect(productActions(crm)).toEqual({
+      primary: { label: 'Try demo', to: '/products/simple-crm/try' },
+      secondary: { label: 'View details', to: '/products/simple-crm' },
+    });
+  });
+
+  it('keeps the CRM separate from analytics, invoicing and tasks', () => {
+    const text = [crm.summary, crm.description, ...crm.features, ...crm.benefits].join(' ');
+    expect(/invoice|payment|revenue|forecast|reminder|due date|\bAI\b/i.test(text)).toBe(false);
   });
 
   it('builds interest links without personal data', () => {

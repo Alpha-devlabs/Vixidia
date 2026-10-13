@@ -7,6 +7,7 @@ import { StatusBadge } from '../components/StatusBadge';
 import { NotFoundContent } from './NotFoundPage';
 import { PulsePreview } from '../features/pulse/PulsePreview';
 import { InvoicePreview } from '../features/invoices/InvoicePreview';
+import { CrmPreview } from '../features/crm/CrmPreview';
 import { paths } from '../config/routes';
 import { demoPath, getProductBySlug, hasDemo, interestPath, statusInfo } from '../utils/products';
 import type { DemoId, Product } from '../types/product';
@@ -21,6 +22,10 @@ const previews: Record<DemoId, { render: () => ReactNode; caption: string }> = {
   'invoice-tracker': {
     render: () => <InvoicePreview />,
     caption: 'A snapshot of the demo. Open it to create invoices, record full or part payments and watch balances and statuses update.',
+  },
+  crm: {
+    render: () => <CrmPreview />,
+    caption: 'A snapshot of the demo’s customer directory. Open it to search customers, view profiles and their history, and add or edit records.',
   },
 };
 

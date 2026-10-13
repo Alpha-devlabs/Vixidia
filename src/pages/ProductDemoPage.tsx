@@ -8,6 +8,7 @@ import { BrandMark } from '../components/Wordmark';
 import { ThemeToggle } from '../theme/ThemeToggle';
 import { PulseDemo } from '../features/pulse/PulseDemo';
 import { InvoiceTracker } from '../features/invoices/InvoiceTracker';
+import { CrmApp } from '../features/crm/CrmApp';
 import { brand } from '../config/brand';
 import { paths } from '../config/routes';
 import { getProductBySlug, productPath } from '../utils/products';
@@ -17,6 +18,7 @@ import type { DemoId, Product } from '../types/product';
 const demos: Record<DemoId, () => ReactNode> = {
   'pulse-dashboard': () => <PulseDemo />,
   'invoice-tracker': () => <InvoiceTracker />,
+  crm: () => <CrmApp />,
 };
 
 export function ProductDemoPage() {
