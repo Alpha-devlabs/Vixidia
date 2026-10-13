@@ -114,9 +114,22 @@ describe('paths and actions', () => {
   });
 
   it('offers only the concept page for planned products', () => {
-    const { primary, secondary } = productActions(leave);
+    // Every current product has a demo, so check the rule on a planned copy without one.
+    const { demo: _demo, ...rest } = leave;
+    void _demo;
+    const { primary, secondary } = productActions({ ...rest, status: 'planned' });
     expect(primary).toEqual({ label: 'View concept', to: '/products/leave-attendance' });
     expect(secondary).toBeUndefined();
+  });
+
+  it('shows Leave & Attendance as in development with a sample-data demo, on its existing slug', () => {
+    expect(leave).toMatchObject({ name: 'Leave & Attendance', slug: 'leave-attendance', kind: 'HR & Workforce', status: 'in_build' });
+    expect(leave.summary).toBe('Simplify daily attendance and leave tracking.');
+    expect(leave.description).toBe('Keep employee attendance records organized, review working-day activity, and manage leave requests in one convenient place.');
+    expect(leave.demo).toEqual({ id: 'leave', label: 'Try the demo', kind: 'interactive' });
+    expect(productActions(leave).primary).toEqual({ label: 'Try demo', to: '/products/leave-attendance/try' });
+    const text = [leave.summary, leave.description, leave.tagline, ...leave.features, ...leave.benefits].join(' ');
+    expect(/payroll|salary|biometric|fingerprint|GPS|location|notif|automat/i.test(text)).toBe(false);
   });
 
   it('shows Simple CRM as in development with a sample-data demo', () => {

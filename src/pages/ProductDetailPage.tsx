@@ -9,6 +9,7 @@ import { PulsePreview } from '../features/pulse/PulsePreview';
 import { InvoicePreview } from '../features/invoices/InvoicePreview';
 import { CrmPreview } from '../features/crm/CrmPreview';
 import { TasksPreview } from '../features/tasks/TasksPreview';
+import { LeavePreview } from '../features/leave/LeavePreview';
 import { paths } from '../config/routes';
 import { demoPath, getProductBySlug, hasDemo, interestPath, statusInfo } from '../utils/products';
 import type { DemoId, Product } from '../types/product';
@@ -31,6 +32,10 @@ const previews: Record<DemoId, { render: () => ReactNode; caption: string }> = {
   tasks: {
     render: () => <TasksPreview />,
     caption: 'A snapshot of today’s and overdue tasks. Open the demo to filter, create, edit and complete tasks.',
+  },
+  leave: {
+    render: () => <LeavePreview />,
+    caption: 'A snapshot of the day’s attendance. Open the demo to check people in and out, browse past days, and approve or reject leave.',
   },
 };
 

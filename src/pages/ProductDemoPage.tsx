@@ -10,6 +10,7 @@ import { PulseDemo } from '../features/pulse/PulseDemo';
 import { InvoiceTracker } from '../features/invoices/InvoiceTracker';
 import { CrmApp } from '../features/crm/CrmApp';
 import { TasksApp } from '../features/tasks/TasksApp';
+import { LeaveApp } from '../features/leave/LeaveApp';
 import { brand } from '../config/brand';
 import { paths } from '../config/routes';
 import { getProductBySlug, productPath } from '../utils/products';
@@ -21,6 +22,7 @@ const demos: Record<DemoId, () => ReactNode> = {
   'invoice-tracker': () => <InvoiceTracker />,
   crm: () => <CrmApp />,
   tasks: () => <TasksApp />,
+  leave: () => <LeaveApp />,
 };
 
 export function ProductDemoPage() {

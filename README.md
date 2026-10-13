@@ -1,6 +1,6 @@
 # Vixidia website
 
-Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`) and **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`).
+Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`), **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`) and **Leave & Attendance** (`/products/leave-attendance/try`).
 
 Stack: React 19, TypeScript (strict), Vite, React Router 7, Tailwind CSS 4, Lucide icons, Vitest.
 
@@ -17,7 +17,7 @@ npm run dev        # http://localhost:5173
 | `npm run build` | Type-check, then production build into `dist/` |
 | `npm run preview` | Serve the production build locally |
 | `npm run typecheck` | Strict TypeScript check only |
-| `npm test` | Unit tests (product registry, Business Analytics calculations, invoice, CRM and task rules, inquiry validation) |
+| `npm test` | Unit tests (product registry, Business Analytics calculations, invoice, CRM, task and attendance rules, inquiry validation) |
 | `npm run lint` | ESLint |
 
 ## Where things live
@@ -32,6 +32,7 @@ src/
     pulse/        Business Analytics demo (internal name Pulse): pure logic (pulseLogic.ts), state hook, dashboard components
     crm/          Simple CRM demo: rules (crmLogic.ts), state hook, directory, profile, forms
     tasks/        Tasks & Follow-ups demo: rules (taskLogic.ts), state hook, list, form, detail drawer
+    leave/        Leave & Attendance demo: rules (leaveLogic.ts), state hook, daily list, leave requests, profiles
     inquiry/      Inquiry validation and the submission adapter
   hooks/          usePageMeta (document title + meta description)
   pages/          One component per route
@@ -159,6 +160,35 @@ Other behaviour:
 - **Completing and reopening:** completing a task records today as its completion date. Reopening clears that date and sets the task back to To do.
 - **Follow-ups:** a follow-up is a task in the Follow-up category, not a separate system. A task can optionally link to one of the Simple CRM demo's sample customers by id. The customer list is read from `crmSample.ts`, never copied or changed. The two demos don't sync, and the CRM profile is not linked, because the CRM demo has no per-customer URL.
 
+## Leave & Attendance (demo, Phase 0)
+
+`src/features/leave/` is a design-first attendance and leave demo. It has:
+- daily attendance with date navigation
+- check-in and check-out for today
+- attendance history for recent working days
+- leave requests with demo approve and reject
+- employee profiles
+
+It runs on 14 fictional staff from `src/data/leaveSample.ts`, held in memory by `useLeaveDemo.ts`. **Reset demo** or a reload restores the sample data. Nothing is sent, and approval is a demonstration, not HR authorisation.
+
+Rules live in `leaveLogic.ts`.
+- **Calendar:** Monday–Friday are working days. Weekends are non-working and never count as absence. Public holidays are not modelled.
+- **Demo "today":** the latest working day on or before the visitor's date, so a weekend visit shows Friday.
+- **Day rules:** the day starts at 09:30. Check-in after 09:45 is late.
+- **One status per person per working day, in this order**, so no one is counted twice:
+  1. **On leave** if an *approved* request covers the date. Pending and rejected requests don't count.
+  2. **Present** if a check-in is recorded. This can carry a *late* flag, or an *incomplete check-out* flag on a past day.
+  3. **Absent** on a past day with no check-in.
+  4. **Not checked in** today with no check-in yet.
+- **Check-in and check-out:** today only.
+  - No second check-in, and no check-in on approved leave.
+  - Check-out needs a check-in, happens once, and must be later than the check-in.
+- **Worked duration:** check-out minus check-in, only when both exist. Breaks are not recorded, and overtime isn't calculated.
+- **Leave requests:**
+  - Employee, type and dates are required.
+  - The end date can't be before the start date, a request can be at most 60 days, and it needs at least one working day.
+  - A request can't overlap another pending or approved request, or a day with recorded attendance. These conflicts are checked again on approval.
+
 ## The Business Analytics demo
 
 **Business Analytics** was previously called Pulse. Only user-facing names changed. The product id, URL slug (`/products/pulse`, `/products/pulse/try`), the `src/features/pulse/` folder and component names such as `PulseDemo` keep the old name, so existing links, imports and tests still work.
@@ -199,7 +229,7 @@ The app is a static single-page app. The host must serve `index.html` for unknow
 
 ## Honest-by-design notes
 
-- Business Analytics, the Invoice & Payment Tracker, Simple CRM and Tasks & Follow-ups are labelled **In development**, not live, even though their demos work. Leave & Attendance is a planned concept.
+- All five products (Business Analytics, Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups and Leave & Attendance) are labelled **In development**, not live, even though their demos work.
 - The inquiry form does not send anything yet and says so on the form and the confirmation page.
 - The privacy page is marked as a draft that needs review before launch.
 - No trademark or domain clearance has been checked for the name “Vixidia”.
