@@ -1,6 +1,6 @@
 # Vixidia website
 
-Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`), **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`), **Leave & Attendance** (`/products/leave-attendance/try`) and the industry-specific solutions **Water Delivery Management** (`/products/water-delivery-management/try`) and **Gym Membership Management** (`/products/gym-membership-management/try`).
+Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`), **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`), **Leave & Attendance** (`/products/leave-attendance/try`) and the industry-specific solutions **Water Delivery Management** (`/products/water-delivery-management/try`), **Gym Membership Management** (`/products/gym-membership-management/try`) and **Salon Management** (`/products/salon-management/try`).
 
 Stack: React 19, TypeScript (strict), Vite, React Router 7, Tailwind CSS 4, Lucide icons, Vitest.
 
@@ -36,6 +36,7 @@ src/
     leave/        Leave & Attendance demo: rules (leaveLogic.ts), state hook, daily list, leave requests, profiles
     water/        Water Delivery Management demo: rules (waterLogic.ts), state hook, today's run, orders, customers
     gym/          Gym Membership Management demo: rules (gymLogic.ts), state hook, dashboard, members, attendance, payments
+    salon/        Salon Management demo: rules (salonLogic.ts), state hook, schedule, booking, customers, services
     inquiry/      Inquiry validation and the submission adapter
   hooks/          usePageMeta (document title + meta description)
   pages/          One component per route
@@ -131,7 +132,7 @@ Open questions, not decided in code:
 
 The **Solutions** page (main nav and footer; the URL stays `/products`) is a search-first catalogue.
 
-- **Data:** products come straight from the product registry (`src/config/products.ts`), each with a `searchKeywords` list. A product with an `industry` (Water Delivery Management and Gym Membership Management) is listed under Industry-specific; the others are General business tools. Planned industry ideas live in `src/config/solutionIdeas.ts`. They are catalogue entries only, with no route, page or demo. When an idea gets a real demo it moves to the registry, as Water Delivery Management and Gym Membership Management did, so it is never listed twice.
+- **Data:** products come straight from the product registry (`src/config/products.ts`), each with a `searchKeywords` list. A product with an `industry` (Water Delivery Management, Gym Membership Management and Salon Management) is listed under Industry-specific; the others are General business tools. Planned industry ideas live in `src/config/solutionIdeas.ts`. They are catalogue entries only, with no route, page or demo. When an idea gets a real demo it moves to the registry, as Water Delivery Management, Gym Membership Management and Salon Management did, so it is never listed twice.
 - **Search (`src/features/solutions/catalog.ts`):**
   - Text is normalised: lower case, accents removed, `&` read as "and", punctuation removed, simple plurals reduced.
   - Every meaningful query word must match the start of a word in the name, category or industry, keywords or summary. Filler words such as "software" or "management" are ignored.
@@ -263,6 +264,52 @@ Only facts are stored (`src/types/gym.ts`): members, memberships, check-ins and 
 
 Not in this demo: renewal reminders, freezing memberships, refunds or credit, automatic billing, GST or invoices, trainers, classes, diet or workout plans, biometric or QR check-in.
 
+## Salon Management (demo)
+
+`/products/salon-management` (details) and `/products/salon-management/try` (demo). `src/features/salon/` has:
+- **Schedule:**
+  - A day view for any date from 14 days back to 60 days ahead.
+  - Figures: appointments, still to come, completed (with unpaid count), cancelled and revenue.
+  - Filters: All, Upcoming, Completed, Unpaid and Cancelled, plus stylist and search.
+  - Each appointment shows start, end and duration, customer, services, stylist and status, with a "Coming up" list for the next 7 days.
+- **Appointments:**
+  - Book for an existing or new customer, choosing one or more services. The time and price are added up.
+  - Pick a stylist, date and a free start time.
+  - Reschedule, cancel with a reason, check out (pay now or later), and take payment for unpaid ones.
+- **Customers:** search by name, phone or email; visits, last visit, usual service, next appointment, notes and full history; add and edit with validation.
+- **Services & hours:** the menu (name, category, duration, price), opening hours and stylists with what they do.
+
+It runs on a fictional salon, "Mehendi Lane Salon", from `src/data/salonSample.ts`, on a fixed sample day (Saturday 17 October 2026). Names, phones and emails are invented. One UK number uses the reserved drama range. State is held in memory by `useSalonDemo.ts`, so **Reset demo** or a reload restores the sample data.
+
+Rules live in `salonLogic.ts`:
+- **Time:**
+  - Open 10:00–20:00, closed Tuesdays.
+  - Appointments start on the quarter hour and must finish by closing.
+  - Duration is the sum of the booked services; end = start + duration.
+  - Bookings and reschedules go from today to 60 days ahead.
+- **Conflicts** (cancelled appointments never count):
+  - A stylist can't have overlapping appointments; back-to-back is fine.
+  - A customer can't be in two overlapping appointments.
+  - Stylists only do their categories: Meena and Ravi do hair, Shalini does skin and nails.
+- **Status:**
+  - A booked appointment can be checked out (completed) on or before the demo's today, rescheduled or cancelled.
+  - Completed and cancelled appointments are final. There is no correction workflow in this demo.
+- **Money (integer paise):**
+  - Service names, durations and prices are copied onto the appointment at booking, so later menu changes don't rewrite it.
+  - Only completed appointments can be paid: once, in full, with one payment record.
+  - Revenue for a day = payments recorded that day. Bookings, cancellations and unpaid work are never revenue.
+- **Customers:**
+  - Phone numbers in any format (6–15 digits) are accepted.
+  - Duplicates are caught on phone (last 10 digits when both have 10 or more) or email (ignoring case).
+
+**Sample scenario** (checked in `salonLogic.test.ts`):
+- Today has 13 appointments: 5 completed and 8 still to come, plus 1 cancellation.
+- ₹4,700 was paid today, and one ₹2,500 colouring is completed but unpaid.
+- 16 customers, many with repeat visits.
+- The tests also check that no seeded appointment clashes, falls outside opening hours or lands on a Tuesday.
+
+Not in this demo: partial payments or discounts, refunds, reminders or confirmations, online booking, calendar sync, commissions, payroll, stock or retail, GST.
+
 ## The Business Analytics demo
 
 **Business Analytics** was previously called Pulse. Only user-facing names changed. The product id, URL slug (`/products/pulse`, `/products/pulse/try`), the `src/features/pulse/` folder and component names such as `PulseDemo` keep the old name, so existing links, imports and tests still work.
@@ -303,7 +350,7 @@ The app is a static single-page app. The host must serve `index.html` for unknow
 
 ## Honest-by-design notes
 
-- All seven products (Business Analytics, Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups, Leave & Attendance, Water Delivery Management and Gym Membership Management) are labelled **In development**, not live, even though their demos work.
+- All eight products (Business Analytics, Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups, Leave & Attendance, Water Delivery Management, Gym Membership Management and Salon Management) are labelled **In development**, not live, even though their demos work.
 - The inquiry form does not send anything yet and says so on the form and the confirmation page.
 - The privacy page is marked as a draft that needs review before launch.
 - No trademark or domain clearance has been checked for the name “Vixidia”.

@@ -22,6 +22,7 @@ describe('product registry', () => {
       'Leave & Attendance',
       'Water Delivery Management',
       'Gym Membership Management',
+      'Salon Management',
     ]);
   });
 
@@ -164,7 +165,19 @@ describe('paths and actions', () => {
   });
 
   it('marks only the industry products as industry-specific', () => {
-    expect(products.filter((p) => p.industry).map((p) => p.id)).toEqual(['water', 'gym']);
+    expect(products.filter((p) => p.industry).map((p) => p.id)).toEqual(['water', 'gym', 'salon']);
+  });
+
+  it('shows Salon Management as an industry-specific product in development with a sample-data demo', () => {
+    const salon = getProductById('salon')!;
+    expect(salon).toMatchObject({ name: 'Salon Management', slug: 'salon-management', status: 'in_build' });
+    expect(salon.summary).toBe('Manage salon appointments, services, customers, and payments in one convenient place.');
+    expect(salon.demo).toEqual({ id: 'salon', label: 'Try the demo', kind: 'interactive' });
+    expect(getProductBySlug('salon-management')).toBe(salon);
+    expect(productActions(salon).primary).toEqual({ label: 'Try demo', to: '/products/salon-management/try' });
+    for (const k of ['salon', 'beauty parlour', 'beauty salon', 'haircut', 'appointments', 'stylist booking', 'facial', 'manicure']) expect(salon.searchKeywords).toContain(k);
+    const text = [salon.summary, salon.description, salon.tagline, ...salon.features, ...salon.benefits].join(' ');
+    expect(/commission|inventory|stock|retail|GST|WhatsApp|SMS|gateway|payroll|online booking/i.test(text)).toBe(false);
   });
 
   it('shows Simple CRM as in development with a sample-data demo', () => {

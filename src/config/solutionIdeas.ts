@@ -1,4 +1,4 @@
-import { GraduationCap, Scissors, Truck, type LucideIcon } from 'lucide-react';
+import { GraduationCap, Truck, type LucideIcon } from 'lucide-react';
 
 /**
  * Industry-specific solution ideas shown in the solutions finder.
@@ -7,7 +7,7 @@ import { GraduationCap, Scissors, Truck, type LucideIcon } from 'lucide-react';
  * available, and none has a page, route or demo. They exist so visitors can find
  * them by search and tell us they would use them. When an idea becomes a real
  * product it moves to the product registry (config/products.ts) instead, as
- * Water Delivery Management and Gym Membership Management did.
+ * Water Delivery Management, Gym Membership Management and Salon Management did.
  */
 export interface SolutionIdea {
   id: string;
@@ -23,15 +23,6 @@ export interface SolutionIdea {
 }
 
 export const solutionIdeas: readonly SolutionIdea[] = [
-  {
-    id: 'salon',
-    name: 'Salon Management',
-    industry: 'Salons & beauty',
-    summary: 'For salons, barbers and beauty parlours that book appointments and serve regulars.',
-    wouldCover: ['Appointments', 'Customer history', 'Service records'],
-    searchKeywords: ['salon', 'salons', 'beauty', 'beauty parlour', 'beauty parlor', 'parlour', 'barber', 'barbershop', 'hair', 'spa', 'nails', 'stylist', 'appointments', 'bookings', 'services'],
-    icon: Scissors,
-  },
   {
     id: 'tuition',
     name: 'Tuition Centre Management',

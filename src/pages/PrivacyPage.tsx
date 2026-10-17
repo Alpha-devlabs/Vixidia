@@ -21,8 +21,8 @@ const sections = [
   {
     title: 'Product demos and previews',
     body: [
-      'Demos such as Business Analytics, the Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups, Leave & Attendance, Water Delivery Management and Gym Membership Management use a fictional business and invented records. Changes you make, including invoices, payments, customers, interactions, tasks, check-ins, leave requests, deliveries, members, renewals and gym check-ins you add or record, are held in the page’s memory only and are discarded when you reload or close the tab.',
-      'Demos do not use local storage, cookies or any network requests to save your changes. Recording a payment in a demo does not move any money, logging a customer interaction does not send any email or message, tasks never send reminders or notifications, leave approvals in the demo notify no one, recording a water delivery or payment contacts no customer and collects no money, and gym renewals and membership payments charge no one.',
+      'Demos such as Business Analytics, the Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups, Leave & Attendance, Water Delivery Management, Gym Membership Management and Salon Management use a fictional business and invented records. Changes you make, including invoices, payments, customers, interactions, tasks, check-ins, leave requests, deliveries, members, renewals, gym check-ins and salon appointments you add or record, are held in the page’s memory only and are discarded when you reload or close the tab.',
+      'Demos do not use local storage, cookies or any network requests to save your changes. Recording a payment in a demo does not move any money, logging a customer interaction does not send any email or message, tasks never send reminders or notifications, leave approvals in the demo notify no one, recording a water delivery or payment contacts no customer and collects no money, gym renewals and membership payments charge no one, and salon bookings send no confirmation and checkout collects no money.',
     ],
   },
   {

@@ -13,6 +13,7 @@ import { TasksApp } from '../features/tasks/TasksApp';
 import { LeaveApp } from '../features/leave/LeaveApp';
 import { WaterApp } from '../features/water/WaterApp';
 import { GymApp } from '../features/gym/GymApp';
+import { SalonApp } from '../features/salon/SalonApp';
 import { brand } from '../config/brand';
 import { paths } from '../config/routes';
 import { getProductBySlug, productPath } from '../utils/products';
@@ -27,6 +28,7 @@ const demos: Record<DemoId, () => ReactNode> = {
   leave: () => <LeaveApp />,
   water: () => <WaterApp />,
   gym: () => <GymApp />,
+  salon: () => <SalonApp />,
 };
 
 export function ProductDemoPage() {

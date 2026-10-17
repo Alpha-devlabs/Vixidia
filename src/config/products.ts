@@ -1,4 +1,4 @@
-import { Activity, CalendarCheck, Contact, Droplets, Dumbbell, ListChecks, ReceiptText } from 'lucide-react';
+import { Activity, CalendarCheck, Contact, Droplets, Dumbbell, ListChecks, ReceiptText, Scissors } from 'lucide-react';
 import type { Product } from '../types/product';
 
 /**
@@ -277,6 +277,63 @@ export const products: readonly Product[] = [
       'attendance',
       'check-in',
       'workout',
+    ],
+  },
+  {
+    id: 'salon',
+    slug: 'salon-management',
+    name: 'Salon Management',
+    kind: 'Salons & beauty',
+    industry: 'Salons, barbers and beauty parlours',
+    question: 'Who’s in the chair next, and has everyone paid?',
+    status: 'in_build',
+    icon: Scissors,
+    summary: 'Manage salon appointments, services, customers, and payments in one convenient place.',
+    tagline: 'A calm appointment book for a busy salon.',
+    problem:
+      'Most salons run on a paper diary and a phone. Double bookings slip through, regulars’ preferences live in someone’s head, and at closing time it’s hard to say what was actually paid.',
+    description:
+      'An industry-specific solution for salons, barbers and beauty parlours. Book appointments with one or more services, see each stylist’s day without double bookings, keep customers’ visit history and notes, and check out completed appointments with a recorded payment.',
+    audience: ['Neighbourhood salons', 'Barbers', 'Beauty parlours', 'Nail and skin studios'],
+    benefits: [
+      'See the day at a glance, by stylist, without double bookings',
+      'Know each regular’s history and preferences before they sit down',
+      'Know what was paid today and which completed appointments are still unpaid',
+    ],
+    features: [
+      'A daily schedule with appointments, still to come, completed, cancelled and revenue',
+      'Booking one or more services, with the total time and price worked out',
+      'Stylist assignment that prevents overlapping appointments, within opening hours',
+      'Rescheduling and cancelling appointments',
+      'A customer directory with visit history, last visit, usual service and notes',
+      'Checkout that records full payment once, with unpaid appointments clearly marked',
+    ],
+    futureFeatures: ['Appointment reminders to customers', 'Online booking', 'Packages and memberships'],
+    demo: { id: 'salon', label: 'Try the demo', kind: 'interactive' },
+    searchKeywords: [
+      'salon',
+      'salons',
+      'beauty salon',
+      'beauty parlour',
+      'beauty parlor',
+      'parlour',
+      'barber',
+      'barbershop',
+      'hair',
+      'haircut',
+      'hair salon',
+      'spa',
+      'facial',
+      'manicure',
+      'pedicure',
+      'nails',
+      'waxing',
+      'threading',
+      'stylist',
+      'stylist booking',
+      'appointments',
+      'bookings',
+      'appointment booking',
     ],
   },
 ];
