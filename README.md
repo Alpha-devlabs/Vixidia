@@ -209,6 +209,7 @@ Rules live in `leaveLogic.ts`.
 
 The first industry-specific solution: `/products/water-delivery-management` (details) and `/products/water-delivery-management/try` (demo). `src/features/water/` covers:
 - **Today:** deliveries today, completed, pending, customers owing and cans with customers, then the day's list (quantity, empty cans, payment, delivery status) with filters and search.
+- **Add order** (the main action on Today, and **New order** in a customer's account): pick an existing active customer by searching name, area or phone, or add a new customer in the same form. Then choose the day (today to 30 days ahead) and quantity. A regular order pre-fills the quantity. An order is a planned delivery, so nothing is charged until it's recorded as delivered. A customer can't have two planned deliveries on the same day, and paused customers can't take orders.
 - **Deliveries:** record full cans and cartons delivered, empty cans collected and an optional payment at the door; mark a delivery failed; reschedule a pending or failed delivery.
 - **Customers:** directory with search and an Active / Paused / Owes money filter; an account drawer with balance, cans held, deliveries and payments; add and edit with validation.
 - **Payments:** outstanding balances (largest first), recent payments and recording a payment against a balance.

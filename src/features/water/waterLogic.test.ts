@@ -9,11 +9,14 @@ import {
   canMovement,
   completeDelivery,
   createCustomer,
+  createOrder,
   customerToInput,
   daySummary,
   deliveryCharge,
   deliveryRows,
   emptyCustomerInput,
+  emptyOrderInput,
+  suggestedQuantity,
   failDelivery,
   filterAccounts,
   filterDeliveries,
@@ -402,5 +405,89 @@ describe('customers', () => {
     expect(recurringText({ cans: 2, cartons: 0, days: [0, 1, 2, 3, 4, 5, 6] })).toBe('2 cans · Daily');
     expect(recurringText({ cans: 1, cartons: 0, days: [5, 1] })).toBe('1 can · Mon, Fri');
     expect(recurringText(undefined)).toBe('No regular order');
+  });
+});
+
+describe('orders', () => {
+  const order = (over: Partial<ReturnType<typeof emptyOrderInput>> = {}) => ({ ...emptyOrderInput(TODAY), ...over });
+  const newCustomer = { ...emptyCustomerInput(), name: 'Selvi Arumugam', phone: '+91 90000 09901', locality: 'Kalapatti' };
+
+  it('adds a scheduled delivery for an existing customer without charging', () => {
+    const before = sample();
+    const r = ok(createOrder(before, order({ customerId: 'c25', cans: '3' })));
+    expect(r.isNewCustomer).toBe(false);
+    expect(r.delivery).toMatchObject({ customerId: 'c25', date: TODAY, cans: 3, cartons: 0, status: 'scheduled' });
+    expect(deliveryCharge(r.book, r.delivery)).toBe(0);
+    expect(businessSummary(r.book).outstanding).toBe(695_000);
+    const s = daySummary(deliveryRows(r.book, TODAY));
+    expect(s.scheduled).toBe(19);
+    expect(s.pending).toBe(13);
+    expect(ok(completeDelivery(r.book, r.delivery.id, input({ cans: '3', empties: '1' }))).book.deliveries.find((d) => d.id === r.delivery.id)!.status).toBe('completed');
+  });
+
+  it('creates a new active customer and the order together', () => {
+    const r = ok(createOrder(sample(), order({ customerMode: 'new', customer: { ...newCustomer, status: 'paused' }, date: addDays(TODAY, 1), cans: '2', cartons: '1' })));
+    expect(r.isNewCustomer).toBe(true);
+    expect(r.customer).toMatchObject({ id: 'c36', name: 'Selvi Arumugam', status: 'active', openingBalancePaise: 0, openingCans: 0 });
+    expect(r.delivery).toMatchObject({ customerId: 'c36', date: addDays(TODAY, 1), cans: 2, cartons: 1 });
+    expect(businessSummary(r.book).customers).toBe(36);
+    expect(accountOf(r.book, 'c36')!.upcoming.map((d) => d.id)).toEqual([r.delivery.id]);
+  });
+
+  it('validates the new customer, and saves nothing if anything is wrong', () => {
+    const book = sample();
+    const r = createOrder(book, order({ customerMode: 'new', customer: { ...newCustomer, phone: '+91 90000 01001' }, cans: '0', cartons: '0' }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors.phone).toMatch(/already/);
+      expect(r.errors.cans).toBe('Add at least one can or carton.');
+    }
+    expect(book.customers).toHaveLength(35);
+    const blank = createOrder(book, order({ customerMode: 'new' }));
+    expect(blank.ok).toBe(false);
+    if (!blank.ok) expect(Object.keys(blank.errors).sort()).toEqual(['locality', 'name', 'phone']);
+  });
+
+  it('requires an active existing customer', () => {
+    const none = createOrder(sample(), order());
+    expect(none.ok).toBe(false);
+    if (!none.ok) expect(none.errors.customer).toBe('Choose a customer, or add a new one.');
+    const paused = createOrder(sample(), order({ customerId: 'c33' }));
+    expect(paused.ok).toBe(false);
+    if (!paused.ok) expect(paused.errors.customer).toMatch(/is paused/);
+  });
+
+  it('accepts today up to 30 days ahead, and rejects past or invalid dates', () => {
+    for (const [date, re] of [
+      ['', /Choose a delivery date/],
+      ['2026-13-01', /Choose a delivery date/],
+      [addDays(TODAY, -1), /today or a later date/],
+      [addDays(TODAY, 31), /within 30 days/],
+    ] as const) {
+      const r = createOrder(sample(), order({ customerId: 'c25', date }));
+      expect(r.ok, date).toBe(false);
+      if (!r.ok) expect(r.errors.date, date).toMatch(re);
+    }
+    expect(createOrder(sample(), order({ customerId: 'c25', date: addDays(TODAY, 30) })).ok).toBe(true);
+  });
+
+  it('prevents a second planned delivery for the same customer on the same day', () => {
+    const dup = createOrder(sample(), order({ customerId: 'c07' }));
+    expect(dup.ok).toBe(false);
+    if (!dup.ok) expect(dup.errors.date).toMatch(/already has a delivery planned/);
+    // Already delivered today (c01) or on another day is fine.
+    expect(createOrder(sample(), order({ customerId: 'c01' })).ok).toBe(true);
+    expect(createOrder(sample(), order({ customerId: 'c07', date: addDays(TODAY, 1) })).ok).toBe(true);
+  });
+
+  it('rejects invalid quantities', () => {
+    for (const bad of ['-1', '1.5', '51', 'x']) expect(createOrder(sample(), order({ customerId: 'c25', cans: bad })).ok, bad).toBe(false);
+  });
+
+  it('suggests the customer’s regular order', () => {
+    const book = sample();
+    expect(suggestedQuantity(book.customers.find((c) => c.id === 'c03'))).toEqual({ cans: '2', cartons: '1' });
+    expect(suggestedQuantity(book.customers.find((c) => c.id === 'c25'))).toEqual({ cans: '2', cartons: '0' });
+    expect(suggestedQuantity(undefined)).toEqual({ cans: '2', cartons: '0' });
   });
 });

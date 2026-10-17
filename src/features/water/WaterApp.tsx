@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useState, type ReactNode } from 'react';
-import { CalendarClock, Droplets, IndianRupee, Info, ListChecks, Plus, RotateCcw, Search, SearchX, Truck, UserPlus, Users, Wallet, type LucideIcon } from 'lucide-react';
+import { CalendarClock, ClipboardPlus, Droplets, IndianRupee, Info, ListChecks, Plus, RotateCcw, Search, SearchX, Truck, Users, Wallet, type LucideIcon } from 'lucide-react';
 import type { WaterBook } from '../../types/water';
 import { waterBusiness } from '../../data/waterSample';
 import {
@@ -10,6 +10,8 @@ import {
   daySummary,
   deliveryRows,
   emptyCustomerInput,
+  emptyOrderInput,
+  suggestedQuantity,
   filterAccounts,
   filterDeliveries,
   labelOf,
@@ -27,6 +29,7 @@ import { DeliveryDrawer, type DeliveryMode } from './DeliveryDrawer';
 import { CustomerDrawer } from './CustomerDrawer';
 import { CustomerFormDrawer } from './CustomerFormDrawer';
 import { PaymentDialog } from './PaymentDialog';
+import { OrderDrawer } from './OrderDrawer';
 import { CustomerStatusBadge, DeliveryStatusBadge, Empty, Figures, Initials, Owed, shortDay } from './WaterBits';
 import { Button } from '../../components/Button';
 import { Panel } from '../../components/Panel';
@@ -54,6 +57,7 @@ export function WaterApp() {
   const [profileFor, setProfileFor] = useState<string | null>(null);
   const [form, setForm] = useState<{ mode: 'create' } | { mode: 'edit'; id: string } | null>(null);
   const [payFor, setPayFor] = useState<{ customerId: string } | null>(null);
+  const [orderFor, setOrderFor] = useState<{ customerId: string } | null>(null);
   const [session, setSession] = useState(0);
   const { toast, notify } = useToast(5000);
   const pending = book.deliveries.filter((d) => d.date === book.today && d.status === 'scheduled').length;
@@ -76,6 +80,11 @@ export function WaterApp() {
   const openPay = (customerId = '') => {
     setProfileFor(null);
     setPayFor({ customerId });
+    bump();
+  };
+  const openOrder = (customerId = '') => {
+    setProfileFor(null);
+    setOrderFor({ customerId });
     bump();
   };
   const openForm = (f: { mode: 'create' } | { mode: 'edit'; id: string }) => {
@@ -142,7 +151,7 @@ export function WaterApp() {
       <div className="min-w-0 flex-1 bg-canvas">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {section === 'today' ? (
-            <TodayView book={book} onOpen={(id) => openDelivery(id)} onRecord={(id) => openDelivery(id, 'complete')} onReset={reset} onAddCustomer={() => openForm({ mode: 'create' })} />
+            <TodayView book={book} onOpen={(id) => openDelivery(id)} onRecord={(id) => openDelivery(id, 'complete')} onReset={reset} onAddOrder={() => openOrder()} />
           ) : section === 'customers' ? (
             <CustomersView book={book} onOpen={setProfileFor} onAdd={() => openForm({ mode: 'create' })} onReset={reset} />
           ) : (
@@ -196,6 +205,7 @@ export function WaterApp() {
         onClose={() => setProfileFor(null)}
         onEdit={(id) => openForm({ mode: 'edit', id })}
         onPay={(id) => openPay(id)}
+        onOrder={(id) => openOrder(id)}
         onOpenDelivery={(id) => openDelivery(id)}
       />
       {form ? (
@@ -222,6 +232,23 @@ export function WaterApp() {
           onSave={(input) => {
             const r = actions.pay(input);
             if (r.ok) notify(`${money(r.payment.amountPaise)} received from ${nameOf(r.payment.customerId)} by ${labelOf(paymentMethods, r.payment.method)}. Owes ${money(accountOf(r.book, r.payment.customerId)!.balance)}.`);
+            return r;
+          }}
+        />
+      ) : null}
+      {orderFor ? (
+        <OrderDrawer
+          key={`o${session}`}
+          book={book}
+          initial={{ ...emptyOrderInput(book.today, orderFor.customerId), ...suggestedQuantity(book.customers.find((c) => c.id === orderFor.customerId)) }}
+          open
+          onClose={() => setOrderFor(null)}
+          onSave={(input) => {
+            const r = actions.addOrder(input);
+            if (r.ok) {
+              const when = r.delivery.date === book.today ? 'today' : shortDay(r.delivery.date);
+              notify(`${r.isNewCustomer ? `Added ${r.customer.name} as a new customer. ` : ''}Order for ${r.customer.name}: ${orderText(r.delivery.cans, r.delivery.cartons)}, ${when}.`);
+            }
             return r;
           }}
         />
@@ -284,7 +311,7 @@ function SearchBox({ id, label, placeholder, value, onChange }: { id: string; la
 
 // ---------- Today ----------
 
-function TodayView({ book, onOpen, onRecord, onReset, onAddCustomer }: { book: WaterBook; onOpen: (id: string) => void; onRecord: (id: string) => void; onReset: () => void; onAddCustomer: () => void }) {
+function TodayView({ book, onOpen, onRecord, onReset, onAddOrder }: { book: WaterBook; onOpen: (id: string) => void; onRecord: (id: string) => void; onReset: () => void; onAddOrder: () => void }) {
   const id = useId();
   const [filter, setFilter] = useState<DeliveryFilter>('all');
   const [query, setQuery] = useState('');
@@ -321,8 +348,8 @@ function TodayView({ book, onOpen, onRecord, onReset, onAddCustomer }: { book: W
         }
         onReset={onReset}
         action={
-          <Button variant="secondary" size="sm" onClick={onAddCustomer}>
-            <UserPlus size={16} aria-hidden="true" /> Add customer
+          <Button onClick={onAddOrder}>
+            <ClipboardPlus size={17} aria-hidden="true" /> Add order
           </Button>
         }
       />
@@ -345,7 +372,7 @@ function TodayView({ book, onOpen, onRecord, onReset, onAddCustomer }: { book: W
       </section>
 
       {later.length ? (
-        <Panel title="Coming up" description="Deliveries moved to a later day." aside={<span className="tabular text-xs text-fg-muted">{pluralize(later.length, 'delivery', 'deliveries')}</span>}>
+        <Panel title="Coming up" description="Orders and moved deliveries for later days." aside={<span className="tabular text-xs text-fg-muted">{pluralize(later.length, 'delivery', 'deliveries')}</span>}>
           <ul className="divide-y divide-line">
             {later.map((d) => (
               <li key={d.id}>

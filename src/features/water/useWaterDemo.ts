@@ -4,12 +4,14 @@ import { createWaterSample } from '../../data/waterSample';
 import {
   completeDelivery,
   createCustomer,
+  createOrder,
   failDelivery,
   recordPayment,
   rescheduleDelivery,
   updateCustomer,
   type CompletionInput,
   type CustomerInput,
+  type OrderInput,
 } from './waterLogic';
 
 /**
@@ -31,6 +33,7 @@ export function useWaterDemo() {
       return result;
     }
     return {
+      addOrder: (input: OrderInput) => commit(createOrder(book, input)),
       complete: (deliveryId: string, input: CompletionInput) => commit(completeDelivery(book, deliveryId, input)),
       fail: (deliveryId: string, reason: string) => commit(failDelivery(book, deliveryId, reason)),
       reschedule: (deliveryId: string, date: string) => commit(rescheduleDelivery(book, deliveryId, date)),

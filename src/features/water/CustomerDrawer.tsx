@@ -1,4 +1,4 @@
-import { IndianRupee, Pencil } from 'lucide-react';
+import { ClipboardPlus, IndianRupee, Pencil } from 'lucide-react';
 import type { WaterBook } from '../../types/water';
 import { Dialog } from '../../components/Dialog';
 import { Button } from '../../components/Button';
@@ -13,13 +13,14 @@ interface Props {
   onClose: () => void;
   onEdit: (id: string) => void;
   onPay: (id: string) => void;
+  onOrder: (id: string) => void;
   onOpenDelivery: (deliveryId: string) => void;
 }
 
 const HISTORY = 8;
 
 /** Customer account: contact, regular order, balance, cans held, deliveries and payments. */
-export function CustomerDrawer({ book, customerId, open, onClose, onEdit, onPay, onOpenDelivery }: Props) {
+export function CustomerDrawer({ book, customerId, open, onClose, onEdit, onPay, onOrder, onOpenDelivery }: Props) {
   const acc = customerId ? accountOf(book, customerId) : undefined;
   if (!acc) return null;
   const c = acc.customer;
@@ -34,11 +35,14 @@ export function CustomerDrawer({ book, customerId, open, onClose, onEdit, onPay,
       description={`${c.locality}${c.address ? ` · ${c.address}` : ''}`}
       footer={
         <>
-          <Button variant="secondary" onClick={() => onEdit(c.id)}>
-            <Pencil size={16} aria-hidden="true" /> Edit details
+          <Button variant="subtle" onClick={() => onEdit(c.id)}>
+            <Pencil size={16} aria-hidden="true" /> Edit
           </Button>
-          <Button onClick={() => onPay(c.id)} disabled={acc.balance <= 0}>
+          <Button variant="secondary" onClick={() => onPay(c.id)} disabled={acc.balance <= 0}>
             <IndianRupee size={16} aria-hidden="true" /> Record payment
+          </Button>
+          <Button onClick={() => onOrder(c.id)} disabled={c.status === 'paused'} {...(c.status === 'paused' ? { title: 'Paused customers can’t take orders. Make them active first.' } : {})}>
+            <ClipboardPlus size={16} aria-hidden="true" /> New order
           </Button>
         </>
       }
@@ -73,7 +77,7 @@ export function CustomerDrawer({ book, customerId, open, onClose, onEdit, onPay,
 
       {acc.upcoming.length ? (
         <>
-          <h3 className="mt-6 text-sm font-semibold text-fg">Scheduled</h3>
+          <h3 className="mt-6 text-sm font-semibold text-fg">Planned deliveries</h3>
           <ul className="mt-2 divide-y divide-line rounded-[var(--radius-control)] border border-line">
             {acc.upcoming.map((d) => (
               <li key={d.id}>

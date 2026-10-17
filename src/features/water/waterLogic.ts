@@ -501,6 +501,74 @@ export function updateCustomer(book: WaterBook, id: string, input: CustomerInput
   return { ok: true, customer, book: { ...book, customers: book.customers.map((c) => (c.id === id ? customer : c)) } };
 }
 
+// ---------- Orders ----------
+
+export const MAX_ORDER_DAYS = 30;
+
+export interface OrderInput {
+  /** Existing customer, or a new one entered in the same form. */
+  customerMode: 'existing' | 'new';
+  customerId: string;
+  /** Used only when customerMode is 'new'. */
+  customer: CustomerInput;
+  date: string;
+  cans: string;
+  cartons: string;
+}
+
+export function emptyOrderInput(today: IsoDay, customerId = ''): OrderInput {
+  return { customerMode: 'existing', customerId, customer: emptyCustomerInput(), date: today, cans: '2', cartons: '0' };
+}
+
+/** Planned quantity to suggest for a customer: their regular order, otherwise 2 cans. */
+export function suggestedQuantity(c: WaterCustomer | undefined): { cans: string; cartons: string } {
+  return c?.recurring ? { cans: String(c.recurring.cans), cartons: String(c.recurring.cartons) } : { cans: '2', cartons: '0' };
+}
+
+/**
+ * Adds an order: one scheduled delivery for today or a later day, for an
+ * existing active customer or a new customer created in the same step. No
+ * charge is created until the delivery is recorded as completed.
+ */
+export function createOrder(book: WaterBook, input: OrderInput): Result<{ delivery: Delivery; customer: WaterCustomer; isNewCustomer: boolean }> {
+  const errors: FieldErrors = {};
+  let customer: WaterCustomer | undefined;
+  let customers = book.customers;
+
+  if (input.customerMode === 'new') {
+    Object.assign(errors, validateCustomer(book, { ...input.customer, status: 'active' }));
+  } else {
+    customer = book.customers.find((c) => c.id === input.customerId);
+    if (!customer) errors.customer = 'Choose a customer, or add a new one.';
+    else if (customer.status === 'paused') errors.customer = `${customer.name} is paused. Make them active in Customers before adding an order.`;
+  }
+
+  if (!isIsoDay(input.date)) errors.date = 'Choose a delivery date.';
+  else if (input.date < book.today) errors.date = 'Choose today or a later date.';
+  else if (daysBetween(book.today, input.date) > MAX_ORDER_DAYS) errors.date = `Choose a date within ${MAX_ORDER_DAYS} days.`;
+
+  const cans = parseQty(input.cans);
+  const cartons = parseQty(input.cartons);
+  if (cans === null) errors.cans = `Enter a whole number from 0 to ${MAX_QTY}.`;
+  if (cartons === null) errors.cartons = `Enter a whole number from 0 to ${MAX_QTY}.`;
+  if (cans !== null && cartons !== null && cans + cartons === 0) errors.cans = 'Add at least one can or carton.';
+
+  if (customer && !errors.date && book.deliveries.some((d) => d.customerId === customer!.id && d.date === input.date && d.status === 'scheduled')) {
+    errors.date = `${customer.name} already has a delivery planned for this day. Open it from the list to change it.`;
+  }
+  if (Object.keys(errors).length) return { ok: false, errors };
+
+  const isNewCustomer = input.customerMode === 'new';
+  if (isNewCustomer) {
+    const created = createCustomer(book, { ...input.customer, status: 'active' });
+    if (!created.ok) return created;
+    customer = created.customer;
+    customers = created.book.customers;
+  }
+  const delivery: Delivery = { id: nextId('d', book.deliveries), customerId: customer!.id, date: input.date, cans: cans!, cartons: cartons!, status: 'scheduled' };
+  return { ok: true, delivery, customer: customer!, isNewCustomer, book: { ...book, customers, deliveries: [...book.deliveries, delivery] } };
+}
+
 export type CustomerFilter = 'all' | 'active' | 'paused' | 'balance';
 
 export function filterAccounts(list: Account[], filter: CustomerFilter, query = ''): Account[] {
