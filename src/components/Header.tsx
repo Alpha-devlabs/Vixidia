@@ -51,7 +51,7 @@ export function Header() {
         <div className="hidden items-center gap-2 md:flex">
           <ThemeToggle />
           <ButtonLink to={paths.products} size="sm">
-            Explore products
+            Find a solution
           </ButtonLink>
         </div>
 
@@ -88,7 +88,7 @@ export function Header() {
               </NavLink>
             ))}
             <ButtonLink to={paths.products} className="mt-4 mb-2 w-full">
-              Explore products
+              Find a solution
             </ButtonLink>
           </Container>
         </nav>

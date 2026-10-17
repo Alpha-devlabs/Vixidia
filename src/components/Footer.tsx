@@ -6,7 +6,7 @@ import { Container } from './Container';
 import { Wordmark } from './Wordmark';
 
 const links = [
-  { label: 'Products', to: paths.products },
+  { label: 'Solutions', to: paths.products },
   { label: 'Services', to: paths.services },
   { label: 'How it works', to: paths.howItWorks },
   { label: 'Privacy policy', to: paths.privacy },

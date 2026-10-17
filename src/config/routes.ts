@@ -10,7 +10,7 @@ export const paths = {
 } as const;
 
 export const mainNav = [
-  { label: 'Products', to: paths.products },
+  { label: 'Solutions', to: paths.products },
   { label: 'Services', to: paths.services },
   { label: 'How it works', to: paths.howItWorks },
 ] as const;

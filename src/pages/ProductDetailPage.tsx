@@ -72,7 +72,7 @@ function ProductDetail({ product }: { product: Product }) {
             <ol className="flex flex-wrap items-center gap-1 text-sm text-fg-muted">
               <li>
                 <Link to={paths.products} className="hover:text-fg hover:underline">
-                  Products
+                  Solutions
                 </Link>
               </li>
               <li aria-hidden="true">

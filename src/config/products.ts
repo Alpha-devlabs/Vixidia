@@ -47,6 +47,7 @@ export const products: readonly Product[] = [
       'Shared dashboards for team members',
     ],
     demo: { id: 'pulse-dashboard', label: 'Try the demo', kind: 'interactive' },
+    searchKeywords: ['analytics', 'business analytics', 'reports', 'reporting', 'dashboard', 'sales', 'revenue', 'orders', 'kpi', 'performance', 'insights', 'metrics', 'trends', 'targets', 'shop', 'retail', 'store'],
   },
   {
     id: 'tasks',
@@ -77,6 +78,7 @@ export const products: readonly Product[] = [
     ],
     futureFeatures: ['Reminders before a task is due', 'Assigning tasks to teammates', 'Repeating tasks'],
     demo: { id: 'tasks', label: 'Try the demo', kind: 'interactive' },
+    searchKeywords: ['tasks', 'to-do', 'todo', 'to do list', 'follow-up', 'followup', 'follow up', 'deadlines', 'due dates', 'checklist', 'productivity', 'work planning', 'call back customers'],
   },
   {
     id: 'crm',
@@ -107,6 +109,7 @@ export const products: readonly Product[] = [
     ],
     futureFeatures: ['Importing customers from a spreadsheet', 'Shared access for a small team'],
     demo: { id: 'crm', label: 'Try the demo', kind: 'interactive' },
+    searchKeywords: ['customers', 'clients', 'contacts', 'crm', 'customer relationship', 'leads', 'prospects', 'customer history', 'interactions', 'client list', 'customer database'],
   },
   {
     id: 'invoices',
@@ -141,6 +144,7 @@ export const products: readonly Product[] = [
       'Sending invoices to customers',
     ],
     demo: { id: 'invoice-tracker', label: 'Try the invoice demo', kind: 'interactive' },
+    searchKeywords: ['invoices', 'invoicing', 'bills', 'billing', 'payments', 'receivables', 'outstanding', 'outstanding balances', 'customer balances', 'dues', 'overdue', 'unpaid', 'gst', 'collections', 'part payments', 'accounts'],
   },
   {
     id: 'leave',
@@ -167,5 +171,6 @@ export const products: readonly Product[] = [
     ],
     futureFeatures: ['A monthly summary per person', 'Leave balances', 'Public holiday calendars'],
     demo: { id: 'leave', label: 'Try the demo', kind: 'interactive' },
+    searchKeywords: ['attendance', 'leave', 'leaves', 'time off', 'absence', 'check-in', 'check in', 'staff', 'employees', 'hr', 'human resources', 'workforce', 'team'],
   },
 ];

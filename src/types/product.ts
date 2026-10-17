@@ -47,4 +47,9 @@ export interface Product {
   };
   /** Public application URL, only for live products. */
   appUrl?: string;
+  /**
+   * Extra words people might search for (synonyms, business types, problems),
+   * used by the solutions finder. Name, category and summary are searched anyway.
+   */
+  searchKeywords: readonly string[];
 }

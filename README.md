@@ -32,6 +32,7 @@ src/
     pulse/        Business Analytics demo (internal name Pulse): pure logic (pulseLogic.ts), state hook, dashboard components
     crm/          Simple CRM demo: rules (crmLogic.ts), state hook, directory, profile, forms
     tasks/        Tasks & Follow-ups demo: rules (taskLogic.ts), state hook, list, form, detail drawer
+    solutions/    Solutions finder: catalogue search, idea cards, request-a-solution dialog
     leave/        Leave & Attendance demo: rules (leaveLogic.ts), state hook, daily list, leave requests, profiles
     inquiry/      Inquiry validation and the submission adapter
   hooks/          usePageMeta (document title + meta description)
@@ -123,6 +124,20 @@ Open questions, not decided in code:
 - Rounding the invoice total to the nearest rupee.
 - Discounts, credit notes and overpayments.
 - Editing or deleting payments.
+
+## Solutions finder (`/products`)
+
+The **Solutions** page (main nav and footer; the URL stays `/products`) is a search-first catalogue.
+
+- **Data:** the five products come straight from the product registry (`src/config/products.ts`), each with a `searchKeywords` list. Planned industry ideas live in `src/config/solutionIdeas.ts`. They are catalogue entries only, with no route, page or demo.
+- **Search (`src/features/solutions/catalog.ts`):**
+  - Text is normalised: lower case, accents removed, `&` read as "and", punctuation removed, simple plurals reduced.
+  - Every meaningful query word must match the start of a word in the name, category or industry, keywords or summary. Filler words such as "software" or "management" are ignored.
+  - Results are ranked by where the words matched. Ties keep catalogue order: products first, then ideas.
+- **Filters:** category filters are All solutions, General business tools, Industry-specific and Planned ideas. They combine with the search. The query and category live in the URL (`?q=…&category=…`).
+- **Request a solution (`solutionRequest.ts` and `RequestSolutionDialog.tsx`):**
+  - The form validates the request, then tells the visitor plainly that nothing was sent or stored, and offers a copy to keep.
+  - `submitSolutionRequest` returns `not_connected`. Replace it when a real enquiry service exists; the form does not need to change.
 
 ## Simple CRM (demo, Phase 0)
 
