@@ -14,7 +14,6 @@ describe('catalogue', () => {
     expect(productEntries.map((e) => e.id)).toEqual(products.map((p) => p.id));
     for (const e of productEntries) if (e.type === 'product') expect(e.product).toBe(products.find((p) => p.id === e.id));
     expect(catalog.filter((e) => e.type === 'idea').map((e) => e.name)).toEqual([
-      'Gym Membership Management',
       'Salon Management',
       'Tuition Centre Management',
       'Small Distributor Management',
@@ -29,6 +28,7 @@ describe('catalogue', () => {
     expect(byId('tasks').demoPath).toBe('/products/tasks-follow-ups/try');
     expect(byId('leave').demoPath).toBe('/products/leave-attendance/try');
     expect(byId('water')).toMatchObject({ detailPath: '/products/water-delivery-management', demoPath: '/products/water-delivery-management/try' });
+    expect(byId('gym')).toMatchObject({ detailPath: '/products/gym-membership-management', demoPath: '/products/gym-membership-management/try' });
   });
 
   it('lists Water Delivery Management once, as an industry-specific product with a demo, not a planned idea', () => {
@@ -41,7 +41,15 @@ describe('catalogue', () => {
   });
 
   it('marks only industry products as industry-specific; the general tools stay general', () => {
-    for (const e of catalog.filter((x) => x.type === 'product')) expect(e.category).toBe(e.id === 'water' ? 'industry' : 'general');
+    for (const e of catalog.filter((x) => x.type === 'product')) expect(e.category).toBe(e.id === 'water' || e.id === 'gym' ? 'industry' : 'general');
+  });
+
+  it('lists Gym Membership Management once, as an industry-specific product with a demo, not a planned idea', () => {
+    const gym = catalog.filter((e) => e.name === 'Gym Membership Management');
+    expect(gym).toHaveLength(1);
+    expect(gym[0]).toMatchObject({ type: 'product', id: 'gym', category: 'industry', label: 'Gyms & fitness' });
+    expect(solutionIdeas.some((i) => i.id === 'gym' || /gym/i.test(i.name))).toBe(false);
+    expect(searchCatalog(catalog, '', 'planned').some((e) => e.name === 'Gym Membership Management')).toBe(false);
   });
 
   it('never gives a planned idea a route or a demo', () => {
@@ -116,6 +124,7 @@ describe('search', () => {
 
   it('finds solutions by business problem', () => {
     expect(names('attendance')).toEqual(['Leave & Attendance', 'Gym Membership Management', 'Tuition Centre Management']);
+    for (const q of ['gym', 'fitness club', 'gym membership', 'member renewals', 'gym attendance', 'membership expiry']) expect(first(q), q).toBe('Gym Membership Management');
     expect(names('outstanding balance')).toEqual(['Invoice & Payment Tracker', 'Water Delivery Management', 'Small Distributor Management']);
     expect(names('unpaid dues')).toEqual(['Invoice & Payment Tracker', 'Water Delivery Management']);
     expect(first('fee collection')).toBe('Tuition Centre Management');
@@ -142,7 +151,10 @@ describe('categories', () => {
   it('combine with search', () => {
     expect(names('attendance', 'general')).toEqual(['Leave & Attendance']);
     expect(names('attendance', 'industry')).toEqual(['Gym Membership Management', 'Tuition Centre Management']);
-    expect(names('attendance', 'planned')).toEqual(['Gym Membership Management', 'Tuition Centre Management']);
+    expect(names('attendance', 'planned')).toEqual(['Tuition Centre Management']);
+    expect(names('gym', 'industry')).toEqual(['Gym Membership Management']);
+    expect(names('gym', 'general')).toEqual([]);
+    expect(names('gym', 'planned')).toEqual([]);
     expect(names('invoices', 'planned')).toEqual([]);
     expect(names('water delivery', 'industry')).toEqual(['Water Delivery Management']);
     expect(names('water delivery', 'general')).toEqual([]);
@@ -150,9 +162,9 @@ describe('categories', () => {
   });
 
   it('count each category for the current query; "all" clears the filter', () => {
-    expect(categoryCounts(catalog, '')).toEqual({ all: 10, general: 5, industry: 5, planned: 4 });
+    expect(categoryCounts(catalog, '')).toEqual({ all: 10, general: 5, industry: 5, planned: 3 });
     expect(categoryCounts(catalog, 'water')).toEqual({ all: 1, general: 0, industry: 1, planned: 0 });
-    expect(categoryCounts(catalog, 'attendance')).toEqual({ all: 3, general: 1, industry: 2, planned: 2 });
+    expect(categoryCounts(catalog, 'attendance')).toEqual({ all: 3, general: 1, industry: 2, planned: 1 });
     expect(names('', 'all')).toHaveLength(10);
   });
 

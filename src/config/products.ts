@@ -1,4 +1,4 @@
-import { Activity, CalendarCheck, Contact, Droplets, ListChecks, ReceiptText } from 'lucide-react';
+import { Activity, CalendarCheck, Contact, Droplets, Dumbbell, ListChecks, ReceiptText } from 'lucide-react';
 import type { Product } from '../types/product';
 
 /**
@@ -222,6 +222,61 @@ export const products: readonly Product[] = [
       'outstanding balance',
       'dues',
       'unpaid',
+    ],
+  },
+  {
+    id: 'gym',
+    slug: 'gym-membership-management',
+    name: 'Gym Membership Management',
+    kind: 'Gyms & fitness',
+    industry: 'Gyms, fitness clubs and studios',
+    question: 'Whose membership is running out, and who came in today?',
+    status: 'in_build',
+    icon: Dumbbell,
+    summary: 'Manage gym members, membership plans, renewals, attendance, and payments in one place.',
+    tagline: 'Members, renewals and check-ins without the register book.',
+    problem:
+      'Most gyms track members in a register or a spreadsheet. Expiry dates get missed, renewals are chased by memory, and nobody is quite sure who still owes for this quarter.',
+    description:
+      'An industry-specific solution for gyms and fitness studios. See every member’s plan and expiry date, renew memberships without losing paid days, check members in at the desk, and keep track of membership payments and balances.',
+    audience: ['Independent gyms', 'Fitness clubs and studios', 'Yoga and CrossFit boxes'],
+    benefits: [
+      'Know whose membership is expiring this week before it lapses',
+      'Renew without miscounting days, whether early or after expiry',
+      'See today’s check-ins and who still owes, at a glance',
+    ],
+    features: [
+      'A dashboard of members, active memberships, expiring soon, expired, today’s check-ins and balances owed',
+      'A member directory with search and status filters',
+      'Registering members with a monthly, quarterly, half-yearly or annual plan',
+      'Renewals that extend from the expiry date if early, or from today if expired',
+      'Daily check-in for members with a valid membership, once a day, with 14 days of history',
+      'Membership payments with outstanding balances and payment history',
+    ],
+    futureFeatures: ['Renewal reminders to members', 'Freezing a membership', 'Trainer and class schedules'],
+    demo: { id: 'gym', label: 'Try the demo', kind: 'interactive' },
+    searchKeywords: [
+      'gym',
+      'gyms',
+      'fitness',
+      'fitness club',
+      'fitness centre',
+      'fitness center',
+      'fitness studio',
+      'health club',
+      'yoga studio',
+      'crossfit',
+      'members',
+      'gym membership',
+      'membership',
+      'membership plans',
+      'membership expiry',
+      'renewals',
+      'member renewals',
+      'gym attendance',
+      'attendance',
+      'check-in',
+      'workout',
     ],
   },
 ];

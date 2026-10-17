@@ -1,4 +1,4 @@
-import { Dumbbell, GraduationCap, Scissors, Truck, type LucideIcon } from 'lucide-react';
+import { GraduationCap, Scissors, Truck, type LucideIcon } from 'lucide-react';
 
 /**
  * Industry-specific solution ideas shown in the solutions finder.
@@ -7,7 +7,7 @@ import { Dumbbell, GraduationCap, Scissors, Truck, type LucideIcon } from 'lucid
  * available, and none has a page, route or demo. They exist so visitors can find
  * them by search and tell us they would use them. When an idea becomes a real
  * product it moves to the product registry (config/products.ts) instead, as
- * Water Delivery Management did.
+ * Water Delivery Management and Gym Membership Management did.
  */
 export interface SolutionIdea {
   id: string;
@@ -23,15 +23,6 @@ export interface SolutionIdea {
 }
 
 export const solutionIdeas: readonly SolutionIdea[] = [
-  {
-    id: 'gym',
-    name: 'Gym Membership Management',
-    industry: 'Fitness & gyms',
-    summary: 'For gyms and fitness studios that run on memberships and renewals.',
-    wouldCover: ['Member records', 'Membership plans', 'Renewals', 'Attendance'],
-    searchKeywords: ['gym', 'gyms', 'fitness', 'fitness centre', 'fitness center', 'fitness studio', 'health club', 'yoga studio', 'crossfit', 'members', 'membership', 'renewals', 'trainers', 'workout', 'attendance'],
-    icon: Dumbbell,
-  },
   {
     id: 'salon',
     name: 'Salon Management',

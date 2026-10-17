@@ -12,6 +12,7 @@ import { CrmApp } from '../features/crm/CrmApp';
 import { TasksApp } from '../features/tasks/TasksApp';
 import { LeaveApp } from '../features/leave/LeaveApp';
 import { WaterApp } from '../features/water/WaterApp';
+import { GymApp } from '../features/gym/GymApp';
 import { brand } from '../config/brand';
 import { paths } from '../config/routes';
 import { getProductBySlug, productPath } from '../utils/products';
@@ -25,6 +26,7 @@ const demos: Record<DemoId, () => ReactNode> = {
   tasks: () => <TasksApp />,
   leave: () => <LeaveApp />,
   water: () => <WaterApp />,
+  gym: () => <GymApp />,
 };
 
 export function ProductDemoPage() {

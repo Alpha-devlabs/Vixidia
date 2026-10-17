@@ -11,6 +11,7 @@ import { CrmPreview } from '../features/crm/CrmPreview';
 import { TasksPreview } from '../features/tasks/TasksPreview';
 import { LeavePreview } from '../features/leave/LeavePreview';
 import { WaterPreview } from '../features/water/WaterPreview';
+import { GymPreview } from '../features/gym/GymPreview';
 import { paths } from '../config/routes';
 import { demoPath, getProductBySlug, hasDemo, interestPath, statusInfo } from '../utils/products';
 import type { DemoId, Product } from '../types/product';
@@ -41,6 +42,10 @@ const previews: Record<DemoId, { render: () => ReactNode; caption: string }> = {
   water: {
     render: () => <WaterPreview />,
     caption: 'A snapshot of today’s delivery round. Open the demo to record deliveries, empty cans and payments, reschedule failed deliveries, and manage customers.',
+  },
+  gym: {
+    render: () => <GymPreview />,
+    caption: 'A snapshot of the member list. Open the demo to register members, renew memberships, check members in and record payments.',
   },
 };
 

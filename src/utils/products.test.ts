@@ -13,7 +13,7 @@ describe('product registry', () => {
     for (const p of products) expect(p.slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
   });
 
-  it('lists the five general products, in order, then Water Delivery Management', () => {
+  it('lists the five general products, in order, then the industry products', () => {
     expect(products.map((p) => p.name)).toEqual([
       'Business Analytics',
       'Tasks & Follow-ups',
@@ -21,6 +21,7 @@ describe('product registry', () => {
       'Invoice & Payment Tracker',
       'Leave & Attendance',
       'Water Delivery Management',
+      'Gym Membership Management',
     ]);
   });
 
@@ -149,8 +150,21 @@ describe('paths and actions', () => {
     expect(/GST|invoice|GPS|WhatsApp|warehouse|payroll|gateway/i.test(text)).toBe(false);
   });
 
-  it('marks only the water product as industry-specific', () => {
-    expect(products.filter((p) => p.industry).map((p) => p.id)).toEqual(['water']);
+  it('shows Gym Membership Management as an industry-specific product in development with a sample-data demo', () => {
+    const gym = getProductById('gym')!;
+    expect(gym).toMatchObject({ name: 'Gym Membership Management', slug: 'gym-membership-management', status: 'in_build' });
+    expect(gym.summary).toBe('Manage gym members, membership plans, renewals, attendance, and payments in one place.');
+    expect(gym.demo).toEqual({ id: 'gym', label: 'Try the demo', kind: 'interactive' });
+    expect(getProductBySlug('gym-membership-management')).toBe(gym);
+    expect(demoPath(gym)).toBe('/products/gym-membership-management/try');
+    expect(productActions(gym).primary).toEqual({ label: 'Try demo', to: '/products/gym-membership-management/try' });
+    for (const k of ['gym', 'fitness club', 'gym membership', 'member renewals', 'gym attendance', 'membership expiry']) expect(gym.searchKeywords).toContain(k);
+    const text = [gym.summary, gym.description, gym.tagline, ...gym.features, ...gym.benefits].join(' ');
+    expect(/biometric|QR|GPS|WhatsApp|SMS|payroll|diet|workout plan|trainer|gateway|GST|invoice/i.test(text)).toBe(false);
+  });
+
+  it('marks only the industry products as industry-specific', () => {
+    expect(products.filter((p) => p.industry).map((p) => p.id)).toEqual(['water', 'gym']);
   });
 
   it('shows Simple CRM as in development with a sample-data demo', () => {

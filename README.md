@@ -1,6 +1,6 @@
 # Vixidia website
 
-Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`), **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`), **Leave & Attendance** (`/products/leave-attendance/try`) and the first industry-specific solution, **Water Delivery Management** (`/products/water-delivery-management/try`).
+Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`), **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`), **Leave & Attendance** (`/products/leave-attendance/try`) and the industry-specific solutions **Water Delivery Management** (`/products/water-delivery-management/try`) and **Gym Membership Management** (`/products/gym-membership-management/try`).
 
 Stack: React 19, TypeScript (strict), Vite, React Router 7, Tailwind CSS 4, Lucide icons, Vitest.
 
@@ -34,7 +34,8 @@ src/
     tasks/        Tasks & Follow-ups demo: rules (taskLogic.ts), state hook, list, form, detail drawer
     solutions/    Solutions finder: catalogue search, idea cards, request-a-solution dialog
     leave/        Leave & Attendance demo: rules (leaveLogic.ts), state hook, daily list, leave requests, profiles
-    water/        Water Delivery Management demo: rules (waterLogic.ts), state hook, delivery round, customers, payments
+    water/        Water Delivery Management demo: rules (waterLogic.ts), state hook, today's run, orders, customers
+    gym/          Gym Membership Management demo: rules (gymLogic.ts), state hook, dashboard, members, attendance, payments
     inquiry/      Inquiry validation and the submission adapter
   hooks/          usePageMeta (document title + meta description)
   pages/          One component per route
@@ -130,7 +131,7 @@ Open questions, not decided in code:
 
 The **Solutions** page (main nav and footer; the URL stays `/products`) is a search-first catalogue.
 
-- **Data:** products come straight from the product registry (`src/config/products.ts`), each with a `searchKeywords` list. A product with an `industry` (currently only Water Delivery Management) is listed under Industry-specific; the others are General business tools. Planned industry ideas live in `src/config/solutionIdeas.ts`. They are catalogue entries only, with no route, page or demo. When an idea gets a real demo it moves to the registry, as Water Delivery Management did, so it is never listed twice.
+- **Data:** products come straight from the product registry (`src/config/products.ts`), each with a `searchKeywords` list. A product with an `industry` (Water Delivery Management and Gym Membership Management) is listed under Industry-specific; the others are General business tools. Planned industry ideas live in `src/config/solutionIdeas.ts`. They are catalogue entries only, with no route, page or demo. When an idea gets a real demo it moves to the registry, as Water Delivery Management and Gym Membership Management did, so it is never listed twice.
 - **Search (`src/features/solutions/catalog.ts`):**
   - Text is normalised: lower case, accents removed, `&` read as "and", punctuation removed, simple plurals reduced.
   - Every meaningful query word must match the start of a word in the name, category or industry, keywords or summary. Filler words such as "software" or "management" are ignored.
@@ -224,6 +225,44 @@ Rules in `waterLogic.ts`:
 
 Not in this demo: empty-can tracking, part payments, regular delivery schedules, failed or rescheduled deliveries, GST or invoices.
 
+## Gym Membership Management (demo)
+
+`/products/gym-membership-management` (details) and `/products/gym-membership-management/try` (demo). `src/features/gym/` has:
+- **Dashboard:** total members, active memberships, expiring soon, expired, today's check-ins and outstanding balances; renewals due; recent activity; actions to register a member, check someone in and record a payment.
+- **Members:** search by name, email or phone; filter by Active, Expiring soon, Expired or Owes money; a member drawer with memberships, the last 14 days of attendance and payments; register and edit with validation.
+- **Attendance:** today's check-ins and a member search to check people in; earlier days (14 days) are read-only.
+- **Payments:** outstanding balances, recent payments, and recording a payment.
+
+It runs on a fictional gym, "Banyan Fitness Club", from `src/data/gymSample.ts`, on a fixed sample day (Thursday 15 October 2026). Names, phones (`+91 90000 2xxxx`) and emails (`@example.com`) are invented. State is held in memory by `useGymDemo.ts`, so **Reset demo** or a reload restores the sample data.
+
+Only facts are stored (`src/types/gym.ts`): members, memberships, check-ins and payments. Rules live in `gymLogic.ts`:
+- **Plans:** Monthly (1 month, ₹1,500), Quarterly (3, ₹4,000), Half-yearly (6, ₹7,500) and Annual (12, ₹13,500). Money is integer paise.
+- **Dates:**
+  - Adding months keeps the day of the month, clamped to the last day of a shorter month: 31 Jan + 1 month = 28 Feb (29 in a leap year). It never spills into the next month.
+  - A membership of N months starting on S runs to the day before S + N months, inclusive. 15 Jan monthly runs to 14 Feb.
+- **Status on a date:**
+  - Active if a membership covers it. "Valid until" follows renewals that start the day after the previous one ends.
+  - Expiring soon if valid until is at most 7 days away.
+  - Expired if nothing covers it and nothing starts later. Starts later if the only membership begins after it.
+  - The dashboard's Active count includes those expiring soon.
+- **Renewal:**
+  - Before expiry, the new membership starts the day after the current valid-until date, so no paid day is lost. After expiry, it starts on the renewal date.
+  - A member with a renewal already waiting to start, or already renewed today, can't be renewed again.
+- **Check-in:** today only, once per member per day, and only with a membership valid today. Expired members are refused with an explanation. Checking in never renews.
+- **Money:**
+  - Each membership, new or renewal, is one charge at the plan price. Balance = charges − payments.
+  - A payment must be more than ₹0 and no more than the balance, and reduces it once. A payment can be taken while registering or renewing; it's still a separate payment record.
+  - Payments are matched to memberships oldest first, only to show which are paid.
+
+**Sample scenario** (reconciled in `gymLogic.test.ts`):
+- 24 members: 19 with a membership valid today, 4 of them expiring within 7 days.
+- 4 expired, and 1 whose membership starts later.
+- 6 check-ins so far today.
+- ₹11,500 owed by 6 members.
+- It also includes two renewals waiting to start and a month-end renewal: 31 Aug monthly to 29 Sep, then 30 Sep to 29 Oct.
+
+Not in this demo: renewal reminders, freezing memberships, refunds or credit, automatic billing, GST or invoices, trainers, classes, diet or workout plans, biometric or QR check-in.
+
 ## The Business Analytics demo
 
 **Business Analytics** was previously called Pulse. Only user-facing names changed. The product id, URL slug (`/products/pulse`, `/products/pulse/try`), the `src/features/pulse/` folder and component names such as `PulseDemo` keep the old name, so existing links, imports and tests still work.
@@ -264,7 +303,7 @@ The app is a static single-page app. The host must serve `index.html` for unknow
 
 ## Honest-by-design notes
 
-- All six products (Business Analytics, Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups, Leave & Attendance and Water Delivery Management) are labelled **In development**, not live, even though their demos work.
+- All seven products (Business Analytics, Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups, Leave & Attendance, Water Delivery Management and Gym Membership Management) are labelled **In development**, not live, even though their demos work.
 - The inquiry form does not send anything yet and says so on the form and the confirmation page.
 - The privacy page is marked as a draft that needs review before launch.
 - No trademark or domain clearance has been checked for the name “Vixidia”.
