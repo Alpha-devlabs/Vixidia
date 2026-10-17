@@ -7,11 +7,10 @@ import { ProductCard } from '../components/ProductCard';
 import { Button, ButtonLink } from '../components/Button';
 import { StatusBadge } from '../components/StatusBadge';
 import { Badge } from '../components/Badge';
-import { products } from '../config/products';
-import { solutionIdeas } from '../config/solutionIdeas';
 import { paths } from '../config/routes';
-import { buildCatalog, categoryCounts, categoryFilters, searchCatalog, type CategoryFilter } from '../features/solutions/catalog';
+import { categoryCounts, categoryFilters, searchCatalog, type CategoryFilter } from '../features/solutions/catalog';
 import { IdeaCard } from '../features/solutions/IdeaCard';
+import { siteCatalog } from '../features/solutions/siteCatalog';
 import { RequestSolutionDialog } from '../features/solutions/RequestSolutionDialog';
 import { pluralize } from '../utils/format';
 import { cn } from '../utils/cn';
@@ -39,7 +38,7 @@ export function ProductsPage() {
   const category: CategoryFilter = isCategory(rawCategory) ? rawCategory : 'all';
   const [request, setRequest] = useState<{ ideaName?: string; businessType?: string; key: number } | null>(null);
 
-  const catalog = useMemo(() => buildCatalog(products, solutionIdeas), []);
+  const catalog = siteCatalog;
   const hasIdeas = catalog.some((e) => e.type === 'idea');
   const results = useMemo(() => searchCatalog(catalog, query, category), [catalog, query, category]);
   const counts = useMemo(() => categoryCounts(catalog, query), [catalog, query]);

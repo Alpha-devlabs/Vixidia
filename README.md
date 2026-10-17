@@ -32,7 +32,7 @@ src/
     pulse/        Business Analytics demo (internal name Pulse): pure logic (pulseLogic.ts), state hook, dashboard components
     crm/          Simple CRM demo: rules (crmLogic.ts), state hook, directory, profile, forms
     tasks/        Tasks & Follow-ups demo: rules (taskLogic.ts), state hook, list, form, detail drawer
-    solutions/    Solutions finder: catalogue search, idea cards, request-a-solution dialog
+    solutions/    Solutions finder and homepage search: shared catalogue and search, result and idea cards, request-a-solution dialog
     leave/        Leave & Attendance demo: rules (leaveLogic.ts), state hook, daily list, leave requests, profiles
     water/        Water Delivery Management demo: rules (waterLogic.ts), state hook, today's run, orders, customers
     gym/          Gym Membership Management demo: rules (gymLogic.ts), state hook, dashboard, members, attendance, payments
@@ -143,6 +143,14 @@ The **Solutions** page (main nav and footer; the URL stays `/products`) is a sea
 - **Request a solution (`solutionRequest.ts` and `RequestSolutionDialog.tsx`):**
   - The form validates the request, then tells the visitor plainly that nothing was sent or stored, and offers a copy to keep.
   - `submitSolutionRequest` returns `not_connected`. Replace it when a real enquiry service exists; the form does not need to change.
+
+## Homepage search (`/`)
+
+The homepage leads with the same search as the finder (`src/features/solutions/HomeSolutionSearch.tsx`). It reads the one shared catalogue in `siteCatalog.ts` and ranks with `searchCatalog`, so the homepage and `/products` always agree.
+
+- Results update as you type and appear directly under the field: up to four best matches (`HOME_RESULT_LIMIT`), each with its status, summary and actions (**Try demo** and **View solution** for products, using their existing routes; planned ideas get "I’d use this" and are labelled as not available yet). When there are more, **See all N in Solutions** opens `/products?q=…`.
+- The query is kept in the URL as `?q=…`, the same parameter as the finder, so a refresh, a shared link or the back button shows the same results. Enter keeps the visitor on the homepage; Escape or the clear button empties the search.
+- With no query it shows example searches (`exampleSearches`, each checked in `homeSearch.test.ts` to find a solution with a demo) and a link to browse all solutions. With no matches it offers suggestions, browse all, and Request a solution.
 
 ## Simple CRM (demo, Phase 0)
 

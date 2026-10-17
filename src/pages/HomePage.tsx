@@ -1,5 +1,4 @@
-import { Link } from 'react-router';
-import { ChevronRight, Gauge, Layers, LayoutDashboard, MousePointerClick, Target, Users, Workflow, Wrench } from 'lucide-react';
+import { Gauge, Layers, LayoutDashboard, MousePointerClick, Target, Users, Workflow, Wrench } from 'lucide-react';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { Container } from '../components/Container';
 import { ButtonLink } from '../components/Button';
@@ -10,6 +9,7 @@ import { products } from '../config/products';
 import { brand } from '../config/brand';
 import { paths } from '../config/routes';
 import { demoPath, getProductById, productPath } from '../utils/products';
+import { HomeSolutionSearch } from '../features/solutions/HomeSolutionSearch';
 
 const principles = [
   {
@@ -43,64 +43,22 @@ const services = [
 ];
 
 export function HomePage() {
-  usePageMeta(undefined, `${brand.shortDescription} Explore our products or ask about custom software.`);
+  usePageMeta(undefined, `${brand.shortDescription} Search for a solution to your business problem and try a demo, or ask about custom software.`);
   const pulse = getProductById('pulse');
 
   return (
     <>
-      {/* A. Company hero */}
-      <section className="border-b border-line">
-        <Container className="grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:py-24">
-          <div>
-            <h1 className="text-[2.5rem] leading-[1.03] font-bold tracking-[-0.045em] text-balance sm:text-6xl lg:text-[4rem]">
-              {brand.tagline}
-            </h1>
-            <p className="mt-6 max-w-[54ch] text-lg leading-relaxed text-fg-muted">
-              {brand.name} develops straightforward software tools that help small businesses and teams understand their
-              work and organise everyday operations — and builds custom software when a problem needs its own solution.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ButtonLink to={paths.products} size="lg">
-                Explore products
-              </ButtonLink>
-              <ButtonLink to={paths.services} size="lg" variant="secondary">
-                Explore services
-              </ButtonLink>
-            </div>
-            {pulse ? (
-              <p className="mt-6 text-sm text-fg-muted">
-                Want to see one working?{' '}
-                <Link to={demoPath(pulse)} className="font-semibold text-fg underline decoration-accent decoration-2 underline-offset-4 hover:decoration-fg">
-                  Try the {pulse.name} demo
-                </Link>{' '}
-                — no sign-up, sample data only.
-              </p>
-            ) : null}
+      {/* A. Search-first hero: finding a solution is the main job of this page. */}
+      <section className="border-b border-line bg-surface">
+        <Container className="py-12 text-center sm:py-16 lg:py-20">
+          <p className="text-sm font-semibold text-accent-strong">{brand.tagline}</p>
+          <h1 className="mx-auto mt-3 max-w-3xl text-[2.25rem] leading-[1.06] font-bold tracking-[-0.04em] text-balance sm:text-5xl lg:text-[3.5rem]">
+            Find the right solution for your business
+          </h1>
+          <p className="mx-auto mt-4 max-w-[52ch] text-lg leading-relaxed text-fg-muted">Discover practical tools built around the way your business works.</p>
+          <div className="mt-8 text-left">
+            <HomeSolutionSearch />
           </div>
-
-          <section aria-labelledby="questions-heading" className="rounded-[var(--radius-panel)] border border-line bg-surface">
-            <h2 id="questions-heading" className="border-b border-line px-5 py-4 text-base font-semibold">
-              Everyday questions we build for
-            </h2>
-            <ul className="divide-y divide-line">
-              {products.map((p) => (
-                <li key={p.id}>
-                  <Link to={productPath(p)} className="group flex items-center gap-4 px-5 py-3.5 hover:bg-canvas">
-                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-subtle text-fg-muted group-hover:bg-accent-soft group-hover:text-accent-strong">
-                      <p.icon size={18} aria-hidden="true" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-medium">“{p.question}”</span>
-                      <span className="block text-sm text-fg-muted">
-                        {p.name} · {p.kind}
-                      </span>
-                    </span>
-                    <ChevronRight size={18} className="shrink-0 text-fg-subtle group-hover:text-fg" aria-hidden="true" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
         </Container>
       </section>
 

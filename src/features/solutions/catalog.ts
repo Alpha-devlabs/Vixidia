@@ -194,3 +194,9 @@ export function searchCatalog(entries: readonly SolutionEntry[], query: string, 
 export function categoryCounts(entries: readonly SolutionEntry[], query: string): Record<CategoryFilter, number> {
   return Object.fromEntries(categoryFilters.map((c) => [c.value, searchCatalog(entries, query, c.value).length])) as Record<CategoryFilter, number>;
 }
+
+/** The best `limit` matches plus the full count, for compact result lists such as the homepage's. */
+export function topMatches(entries: readonly SolutionEntry[], query: string, limit: number): { shown: SolutionEntry[]; total: number } {
+  const all = searchCatalog(entries, query, 'all');
+  return { shown: all.slice(0, limit), total: all.length };
+}
