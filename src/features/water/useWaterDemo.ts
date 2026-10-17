@@ -1,48 +1,57 @@
-import { useMemo, useState } from 'react';
-import type { WaterBook } from '../../types/water';
-import { createWaterSample } from '../../data/waterSample';
-import {
-  completeDelivery,
-  createCustomer,
-  createOrder,
-  failDelivery,
-  recordPayment,
-  rescheduleDelivery,
-  updateCustomer,
-  type CompletionInput,
-  type CustomerInput,
-  type OrderInput,
-} from './waterLogic';
+import { useMemo, useReducer, useRef } from 'react';
+import { createSampleState, sampleBusiness } from '../../data/waterSample';
+import { waterReducer, summarize, type NewOrderInput } from './waterLogic';
+import { useToast } from '../../components/Toast';
 
 /**
- * The demo's single source of truth: one in-memory book of customers,
- * deliveries and payments (the same pattern as the other Vixidia demos). Every
- * balance, can count and dashboard figure is derived from it, so recording a
- * delivery updates every screen at once. Nothing is saved; reloading or
- * resetting restores the sample data.
+ * Demo state lives only in memory: nothing is stored or sent anywhere,
+ * and reloading the page restores the sample data.
  */
 export function useWaterDemo() {
-  const [book, setBook] = useState<WaterBook>(() => createWaterSample());
-  // Keep the first date so a reset restores exactly the data first shown.
-  const [initialToday] = useState(book.today);
+  const [state, dispatch] = useReducer(waterReducer, undefined, createSampleState);
+  const { toast, notify } = useToast(4500);
+  const nextSeq = useRef(state.nextOrderSeq);
+  nextSeq.current = state.nextOrderSeq;
 
-  const actions = useMemo(() => {
-    function commit<R extends { ok: true; book: WaterBook } | { ok: false }>(result: R): R {
-      const r: { ok: true; book: WaterBook } | { ok: false } = result;
-      if (r.ok) setBook(r.book);
-      return result;
-    }
-    return {
-      addOrder: (input: OrderInput) => commit(createOrder(book, input)),
-      complete: (deliveryId: string, input: CompletionInput) => commit(completeDelivery(book, deliveryId, input)),
-      fail: (deliveryId: string, reason: string) => commit(failDelivery(book, deliveryId, reason)),
-      reschedule: (deliveryId: string, date: string) => commit(rescheduleDelivery(book, deliveryId, date)),
-      pay: (input: { customerId: string; amount: string; method: string }) => commit(recordPayment(book, input)),
-      createCustomer: (input: CustomerInput) => commit(createCustomer(book, input)),
-      updateCustomer: (id: string, input: CustomerInput) => commit(updateCustomer(book, id, input)),
-      reset: () => setBook(createWaterSample(initialToday)),
-    };
-  }, [book, initialToday]);
+  const summary = useMemo(() => summarize(state, sampleBusiness.today), [state]);
 
-  return { book, actions };
+  const actions = useMemo(
+    () => ({
+      markDelivered(orderId: string, label: string) {
+        dispatch({ type: 'markDelivered', orderId });
+        notify(`${label} marked delivered.`);
+      },
+      markPaid(orderId: string, label: string) {
+        dispatch({ type: 'markPaid', orderId });
+        notify(`Payment recorded for ${label}.`);
+      },
+      settleCustomer(customerId: string, name: string) {
+        dispatch({ type: 'settleCustomer', customerId });
+        notify(`All dues from ${name} marked paid.`);
+      },
+      /** Adds a validated order and returns its order number. */
+      addOrder(input: NewOrderInput): string {
+        const number = `${sampleBusiness.orderPrefix}-${nextSeq.current}`;
+        dispatch({
+          type: 'addOrder',
+          input,
+          today: sampleBusiness.today,
+          unitPrice: sampleBusiness.defaultUnitPrice,
+          prefix: sampleBusiness.orderPrefix,
+        });
+        notify(`Order ${number} added to today’s run.`);
+        return number;
+      },
+      reset() {
+        dispatch({ type: 'reset', state: createSampleState() });
+        notify('Sample data restored.');
+      },
+    }),
+    [notify],
+  );
+
+  return { state, summary, actions, toast };
 }
+
+export type WaterDemoApi = ReturnType<typeof useWaterDemo>;
+export type WaterActions = WaterDemoApi['actions'];

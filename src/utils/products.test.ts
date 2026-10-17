@@ -136,13 +136,15 @@ describe('paths and actions', () => {
   it('shows Water Delivery Management as an industry-specific product in development with a sample-data demo', () => {
     const water = getProductById('water')!;
     expect(water).toMatchObject({ name: 'Water Delivery Management', slug: 'water-delivery-management', status: 'in_build', industry: 'Water delivery and reusable-container distribution' });
-    expect(water.summary).toBe('Manage water deliveries, customer accounts, reusable cans, and outstanding balances in one place.');
+    expect(water.summary).toBe('A one-screen view of today’s water deliveries, customers and money still to collect.');
     expect(water.demo).toEqual({ id: 'water', label: 'Try the demo', kind: 'interactive' });
     expect(getProductBySlug('water-delivery-management')).toBe(water);
     expect(productPath(water)).toBe('/products/water-delivery-management');
     expect(demoPath(water)).toBe('/products/water-delivery-management/try');
     expect(productActions(water).primary).toEqual({ label: 'Try demo', to: '/products/water-delivery-management/try' });
-    for (const k of ['water delivery', 'water cans', 'empty cans', 'delivery management', 'customer balances']) expect(water.searchKeywords).toContain(k);
+    for (const k of ['water delivery', 'water cans', 'delivery management', 'customer balances']) expect(water.searchKeywords).toContain(k);
+    // Only claims what the demo does: no empty-can tracking yet.
+    expect([water.summary, ...water.features].join(' ')).not.toMatch(/empty|reusable/i);
     const text = [water.summary, water.description, water.tagline, ...water.features, ...water.benefits].join(' ');
     expect(/GST|invoice|GPS|WhatsApp|warehouse|payroll|gateway/i.test(text)).toBe(false);
   });

@@ -103,7 +103,8 @@ describe('search', () => {
     expect(first('coaching classes')).toBe('Tuition Centre Management');
     expect(first('wholesale')).toBe('Small Distributor Management');
     expect(first('water cans')).toBe('Water Delivery Management');
-    expect(first('empty cans')).toBe('Water Delivery Management');
+    // The original demo doesn't track empty cans, so it isn't offered for that search.
+    expect(names('empty cans')).toEqual([]);
     expect(first('delivery management')).toBe('Water Delivery Management');
     // Invoicing is also about customer balances, so both are offered.
     expect(names('customer balances')).toEqual(['Invoice & Payment Tracker', 'Water Delivery Management', 'Small Distributor Management']);
@@ -116,7 +117,7 @@ describe('search', () => {
   it('finds solutions by business problem', () => {
     expect(names('attendance')).toEqual(['Leave & Attendance', 'Gym Membership Management', 'Tuition Centre Management']);
     expect(names('outstanding balance')).toEqual(['Invoice & Payment Tracker', 'Water Delivery Management', 'Small Distributor Management']);
-    expect(names('unpaid dues')).toEqual(['Invoice & Payment Tracker']);
+    expect(names('unpaid dues')).toEqual(['Invoice & Payment Tracker', 'Water Delivery Management']);
     expect(first('fee collection')).toBe('Tuition Centre Management');
     expect(first('membership renewals')).toBe('Gym Membership Management');
   });

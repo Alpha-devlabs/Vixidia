@@ -205,37 +205,24 @@ Rules live in `leaveLogic.ts`.
   - The end date can't be before the start date, a request can be at most 60 days, and it needs at least one working day.
   - A request can't overlap another pending or approved request, or a day with recorded attendance. These conflicts are checked again on approval.
 
-## Water Delivery Management (demo, Phase 0)
+## Water Delivery Management (demo)
 
-The first industry-specific solution: `/products/water-delivery-management` (details) and `/products/water-delivery-management/try` (demo). `src/features/water/` covers:
-- **Today:** deliveries today, completed, pending, customers owing and cans with customers, then the day's list (quantity, empty cans, payment, delivery status) with filters and search.
-- **Add order** (the main action on Today, and **New order** in a customer's account): pick an existing active customer by searching name, area or phone, or add a new customer in the same form. Then choose the day (today to 30 days ahead) and quantity. A regular order pre-fills the quantity. An order is a planned delivery, so nothing is charged until it's recorded as delivered. A customer can't have two planned deliveries on the same day, and paused customers can't take orders.
-- **Deliveries:** record full cans and cartons delivered, empty cans collected and an optional payment at the door; mark a delivery failed; reschedule a pending or failed delivery.
-- **Customers:** directory with search and an Active / Paused / Owes money filter; an account drawer with balance, cans held, deliveries and payments; add and edit with validation.
-- **Payments:** outstanding balances (largest first), recent payments and recording a payment against a balance.
+The first industry-specific solution: `/products/water-delivery-management` (details) and `/products/water-delivery-management/try` (demo). This is the original water-delivery demo (the very first Vixidia demo, back when it was called Pulse), ported unchanged in behaviour and data onto the current design system. `src/features/water/` has:
+- **Today's run:** orders today, still to deliver, collected today and outstanding dues; today's orders with search and filters (All, To deliver, Delivered, Unpaid, Paid); quick actions; and *Money to collect* per customer.
+- **All orders:** every order across days, with the same search and filters.
+- **Customers:** search by name or area, each customer's orders and dues, *Mark all dues paid* and *New order*.
+- **Orders:** open an order for its details and notes; *Mark delivered* and *Mark paid*.
+- **New order:** an existing customer, or a new one (name, area, type: household, shop or office), cans (1–50), *Collect on delivery* or *Already paid*, and an optional note. A new customer's name can't match an existing one.
 
-It runs on a fictional round, "Kovai Water Rounds" in Coimbatore, from `src/data/waterSample.ts`, held in memory by `useWaterDemo.ts`. Names, phone numbers (`+91 90000 0xxxx`) and addresses are invented. **Reset demo** or a reload restores the sample data. No money is collected and no one is contacted.
+It runs on a fictional business, "Thendral Water Delivery", from `src/data/waterSample.ts`, on a fixed sample day (18 March 2026). Order numbers look like TW-1042. State is held in memory by `useWaterDemo.ts`, so **Reset demo** or a reload restores the sample data, and nothing is sent anywhere.
 
-Only facts are stored (`src/types/water.ts`): customers with an opening balance and can count, deliveries, and payments. Every balance, can count and dashboard figure is derived in `waterLogic.ts`.
-- **Prices:** ₹100 per 20-litre can, ₹150 per carton of twelve 1-litre bottles. All money is integer paise.
-- **Charges:** a completed delivery charges delivered cans × ₹100 + cartons × ₹150. Empty cans returned are never charged. Scheduled, failed and rescheduled deliveries create no charge. A delivery can only be completed once, so it is charged once.
-- **Balance:** opening balance + charges − payments.
-- **Payments:** more than ₹0 and no more than what is owed at that moment. For a payment at the door that means the prior balance plus this delivery. Each payment is one record, so it reduces the balance once.
-- **Reusable cans:** full cans delivered add to the customer's cans held; empties collected subtract. Empties can't exceed the cans held before the delivery, so the count never goes negative. Cartons aren't reusable and don't count. Movements come from the completion record, so reopening a completed delivery changes nothing.
-- **Deliveries:**
-  - Only today's scheduled deliveries can be completed or marked failed. Quantities are whole numbers from 0 to 50, and something must be delivered (otherwise mark it failed).
-  - Rescheduling moves a pending or failed delivery to a date from tomorrow to 30 days ahead. The original stays on its day as *rescheduled* and a new scheduled delivery is created.
-- **Regular orders** are a stated preference shown on the customer and used for planning. They don't generate deliveries automatically in this phase.
+Rules in `waterLogic.ts`:
+- An order's amount is cans × ₹40 (one 20 L can). Amounts are whole rupees.
+- Each order is either paid or unpaid. **Outstanding dues** are the total of every unpaid order on any day, delivered or not. An order can be marked paid before it is delivered.
+- *Collected today* is today's paid orders; *billed today* is all of today's orders.
+- *Mark all dues paid* marks every unpaid order of that customer paid.
 
-**Sample scenario** (reconciled in `waterLogic.test.ts`):
-- 35 customers: 32 active, 3 paused; 24 with a regular order.
-- 18 deliveries today: 6 completed, 12 pending.
-- ₹6,950 outstanding across 11 customers.
-- The worked example: Lakshmi Iyer receives 3 full cans, returns 2 empties and pays ₹150 by UPI. That is ₹300 charged, ₹150 left on this delivery, and +1 can held.
-
-The ledger starts 14 days before the demo's today. Dates are relative to the visitor's date, like the other demos; for a given date the data is identical, and tests pin a fixed date.
-
-Not in this phase: GST, invoices or credit notes, payment gateways, WhatsApp or SMS, GPS or route planning, automatic recurring orders, warehouse stock or supplier purchasing.
+Not in this demo: empty-can tracking, part payments, regular delivery schedules, failed or rescheduled deliveries, GST or invoices.
 
 ## The Business Analytics demo
 
