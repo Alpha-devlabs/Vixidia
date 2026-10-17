@@ -13,13 +13,14 @@ describe('product registry', () => {
     for (const p of products) expect(p.slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
   });
 
-  it('lists exactly the five initial products, in order', () => {
+  it('lists the five general products, in order, then Water Delivery Management', () => {
     expect(products.map((p) => p.name)).toEqual([
       'Business Analytics',
       'Tasks & Follow-ups',
       'Simple CRM',
       'Invoice & Payment Tracker',
       'Leave & Attendance',
+      'Water Delivery Management',
     ]);
   });
 
@@ -130,6 +131,24 @@ describe('paths and actions', () => {
     expect(productActions(leave).primary).toEqual({ label: 'Try demo', to: '/products/leave-attendance/try' });
     const text = [leave.summary, leave.description, leave.tagline, ...leave.features, ...leave.benefits].join(' ');
     expect(/payroll|salary|biometric|fingerprint|GPS|location|notif|automat/i.test(text)).toBe(false);
+  });
+
+  it('shows Water Delivery Management as an industry-specific product in development with a sample-data demo', () => {
+    const water = getProductById('water')!;
+    expect(water).toMatchObject({ name: 'Water Delivery Management', slug: 'water-delivery-management', status: 'in_build', industry: 'Water delivery and reusable-container distribution' });
+    expect(water.summary).toBe('Manage water deliveries, customer accounts, reusable cans, and outstanding balances in one place.');
+    expect(water.demo).toEqual({ id: 'water', label: 'Try the demo', kind: 'interactive' });
+    expect(getProductBySlug('water-delivery-management')).toBe(water);
+    expect(productPath(water)).toBe('/products/water-delivery-management');
+    expect(demoPath(water)).toBe('/products/water-delivery-management/try');
+    expect(productActions(water).primary).toEqual({ label: 'Try demo', to: '/products/water-delivery-management/try' });
+    for (const k of ['water delivery', 'water cans', 'empty cans', 'delivery management', 'customer balances']) expect(water.searchKeywords).toContain(k);
+    const text = [water.summary, water.description, water.tagline, ...water.features, ...water.benefits].join(' ');
+    expect(/GST|invoice|GPS|WhatsApp|warehouse|payroll|gateway/i.test(text)).toBe(false);
+  });
+
+  it('marks only the water product as industry-specific', () => {
+    expect(products.filter((p) => p.industry).map((p) => p.id)).toEqual(['water']);
   });
 
   it('shows Simple CRM as in development with a sample-data demo', () => {

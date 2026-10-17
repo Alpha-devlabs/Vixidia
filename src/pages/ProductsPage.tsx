@@ -23,7 +23,7 @@ function isCategory(v: string | null): v is CategoryFilter {
 }
 
 /**
- * The solutions finder (at /products): search-first discovery across the five
+ * The solutions finder (at /products): search-first discovery across the
  * products in the registry and the planned solution ideas. The search and the
  * category live in the URL (?q=…&category=…), so results can be shared and the
  * back button works.

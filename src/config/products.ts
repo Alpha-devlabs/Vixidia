@@ -1,4 +1,4 @@
-import { Activity, CalendarCheck, Contact, ListChecks, ReceiptText } from 'lucide-react';
+import { Activity, CalendarCheck, Contact, Droplets, ListChecks, ReceiptText } from 'lucide-react';
 import type { Product } from '../types/product';
 
 /**
@@ -172,5 +172,62 @@ export const products: readonly Product[] = [
     futureFeatures: ['A monthly summary per person', 'Leave balances', 'Public holiday calendars'],
     demo: { id: 'leave', label: 'Try the demo', kind: 'interactive' },
     searchKeywords: ['attendance', 'leave', 'leaves', 'time off', 'absence', 'check-in', 'check in', 'staff', 'employees', 'hr', 'human resources', 'workforce', 'team'],
+  },
+  {
+    id: 'water',
+    slug: 'water-delivery-management',
+    name: 'Water Delivery Management',
+    kind: 'Water delivery',
+    industry: 'Water delivery and reusable-container distribution',
+    question: 'Who gets water today, who still has my cans, and who owes me?',
+    status: 'in_build',
+    icon: Droplets,
+    summary: 'Manage water deliveries, customer accounts, reusable cans, and outstanding balances in one place.',
+    tagline: 'Every delivery, every can, every rupee owed — in one place.',
+    problem:
+      'Water-can suppliers run on a notebook: who gets cans today, how many empties are still out, and who paid what at the door. Balances drift, cans go missing, and month-end means going house to house.',
+    description:
+      'An industry-specific solution for water-can and bottled-water suppliers that deliver to homes, shops and offices on a regular round. Plan the day’s deliveries, record what was delivered and the empty cans collected, take payments at the door, and see every customer’s balance and can count.',
+    audience: ['Water-can suppliers', '20-litre can and jar delivery businesses', 'Bottled-water distributors', 'Small delivery rounds'],
+    benefits: [
+      'Know what is left on today’s round at a glance',
+      'See how many of your reusable cans each customer holds',
+      'Keep every customer’s balance right, delivery by delivery',
+    ],
+    features: [
+      'A daily dashboard: deliveries today, completed, pending, customers owing and cans with customers',
+      'A delivery list with quantity, empty cans to collect, payment and delivery status',
+      'Recording full cans delivered, empty cans collected and payment at the door, once per delivery',
+      'Marking a delivery failed and rescheduling it to another day',
+      'A customer directory with search, status filter, regular orders, balances and cans held',
+      'Customer accounts with delivery history and payments',
+      'Recording payments against a balance, with outstanding balances and recent payments',
+    ],
+    futureFeatures: ['Automatically planning the round from regular orders', 'Payment reminders to customers', 'Monthly customer statements'],
+    demo: { id: 'water', label: 'Try the demo', kind: 'interactive' },
+    searchKeywords: [
+      'water',
+      'water delivery',
+      'water can',
+      'water cans',
+      'empty cans',
+      'reusable cans',
+      '20 litre',
+      'jar',
+      'bubble top',
+      'drinking water',
+      'mineral water',
+      'bottled water',
+      'refill',
+      'delivery management',
+      'delivery round',
+      'delivery routes',
+      'deliveries',
+      'customer balances',
+      'outstanding balance',
+      'regular orders',
+      'subscriptions',
+      'deposits',
+    ],
   },
 ];

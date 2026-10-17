@@ -5,7 +5,7 @@ import { demoPath, hasDemo, productPath } from '../../utils/products';
 
 /*
  * The solutions finder's catalogue: the product registry (unchanged, the only
- * source of truth for the five products) plus the planned solution ideas,
+ * source of truth for the products) plus the planned solution ideas,
  * combined into one searchable list.
  *
  * Search is plain, predictable client-side matching:
@@ -64,7 +64,7 @@ export function buildCatalog(products: readonly Product[], ideas: readonly Solut
         name: p.name,
         label: p.kind,
         summary: p.summary,
-        category: 'general',
+        category: p.industry ? 'industry' : 'general',
         icon: p.icon,
         keywords: p.searchKeywords,
         product: p,

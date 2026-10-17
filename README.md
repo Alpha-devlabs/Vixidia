@@ -1,6 +1,6 @@
 # Vixidia website
 
-Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`), **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`) and **Leave & Attendance** (`/products/leave-attendance/try`).
+Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`), **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`), **Leave & Attendance** (`/products/leave-attendance/try`) and the first industry-specific solution, **Water Delivery Management** (`/products/water-delivery-management/try`).
 
 Stack: React 19, TypeScript (strict), Vite, React Router 7, Tailwind CSS 4, Lucide icons, Vitest.
 
@@ -34,6 +34,7 @@ src/
     tasks/        Tasks & Follow-ups demo: rules (taskLogic.ts), state hook, list, form, detail drawer
     solutions/    Solutions finder: catalogue search, idea cards, request-a-solution dialog
     leave/        Leave & Attendance demo: rules (leaveLogic.ts), state hook, daily list, leave requests, profiles
+    water/        Water Delivery Management demo: rules (waterLogic.ts), state hook, delivery round, customers, payments
     inquiry/      Inquiry validation and the submission adapter
   hooks/          usePageMeta (document title + meta description)
   pages/          One component per route
@@ -129,7 +130,7 @@ Open questions, not decided in code:
 
 The **Solutions** page (main nav and footer; the URL stays `/products`) is a search-first catalogue.
 
-- **Data:** the five products come straight from the product registry (`src/config/products.ts`), each with a `searchKeywords` list. Planned industry ideas live in `src/config/solutionIdeas.ts`. They are catalogue entries only, with no route, page or demo.
+- **Data:** products come straight from the product registry (`src/config/products.ts`), each with a `searchKeywords` list. A product with an `industry` (currently only Water Delivery Management) is listed under Industry-specific; the others are General business tools. Planned industry ideas live in `src/config/solutionIdeas.ts`. They are catalogue entries only, with no route, page or demo. When an idea gets a real demo it moves to the registry, as Water Delivery Management did, so it is never listed twice.
 - **Search (`src/features/solutions/catalog.ts`):**
   - Text is normalised: lower case, accents removed, `&` read as "and", punctuation removed, simple plurals reduced.
   - Every meaningful query word must match the start of a word in the name, category or industry, keywords or summary. Filler words such as "software" or "management" are ignored.
@@ -204,6 +205,37 @@ Rules live in `leaveLogic.ts`.
   - The end date can't be before the start date, a request can be at most 60 days, and it needs at least one working day.
   - A request can't overlap another pending or approved request, or a day with recorded attendance. These conflicts are checked again on approval.
 
+## Water Delivery Management (demo, Phase 0)
+
+The first industry-specific solution: `/products/water-delivery-management` (details) and `/products/water-delivery-management/try` (demo). `src/features/water/` covers:
+- **Today:** deliveries today, completed, pending, customers owing and cans with customers, then the day's list (quantity, empty cans, payment, delivery status) with filters and search.
+- **Deliveries:** record full cans and cartons delivered, empty cans collected and an optional payment at the door; mark a delivery failed; reschedule a pending or failed delivery.
+- **Customers:** directory with search and an Active / Paused / Owes money filter; an account drawer with balance, cans held, deliveries and payments; add and edit with validation.
+- **Payments:** outstanding balances (largest first), recent payments and recording a payment against a balance.
+
+It runs on a fictional round, "Kovai Water Rounds" in Coimbatore, from `src/data/waterSample.ts`, held in memory by `useWaterDemo.ts`. Names, phone numbers (`+91 90000 0xxxx`) and addresses are invented. **Reset demo** or a reload restores the sample data. No money is collected and no one is contacted.
+
+Only facts are stored (`src/types/water.ts`): customers with an opening balance and can count, deliveries, and payments. Every balance, can count and dashboard figure is derived in `waterLogic.ts`.
+- **Prices:** ₹100 per 20-litre can, ₹150 per carton of twelve 1-litre bottles. All money is integer paise.
+- **Charges:** a completed delivery charges delivered cans × ₹100 + cartons × ₹150. Empty cans returned are never charged. Scheduled, failed and rescheduled deliveries create no charge. A delivery can only be completed once, so it is charged once.
+- **Balance:** opening balance + charges − payments.
+- **Payments:** more than ₹0 and no more than what is owed at that moment. For a payment at the door that means the prior balance plus this delivery. Each payment is one record, so it reduces the balance once.
+- **Reusable cans:** full cans delivered add to the customer's cans held; empties collected subtract. Empties can't exceed the cans held before the delivery, so the count never goes negative. Cartons aren't reusable and don't count. Movements come from the completion record, so reopening a completed delivery changes nothing.
+- **Deliveries:**
+  - Only today's scheduled deliveries can be completed or marked failed. Quantities are whole numbers from 0 to 50, and something must be delivered (otherwise mark it failed).
+  - Rescheduling moves a pending or failed delivery to a date from tomorrow to 30 days ahead. The original stays on its day as *rescheduled* and a new scheduled delivery is created.
+- **Regular orders** are a stated preference shown on the customer and used for planning. They don't generate deliveries automatically in this phase.
+
+**Sample scenario** (reconciled in `waterLogic.test.ts`):
+- 35 customers: 32 active, 3 paused; 24 with a regular order.
+- 18 deliveries today: 6 completed, 12 pending.
+- ₹6,950 outstanding across 11 customers.
+- The worked example: Lakshmi Iyer receives 3 full cans, returns 2 empties and pays ₹150 by UPI. That is ₹300 charged, ₹150 left on this delivery, and +1 can held.
+
+The ledger starts 14 days before the demo's today. Dates are relative to the visitor's date, like the other demos; for a given date the data is identical, and tests pin a fixed date.
+
+Not in this phase: GST, invoices or credit notes, payment gateways, WhatsApp or SMS, GPS or route planning, automatic recurring orders, warehouse stock or supplier purchasing.
+
 ## The Business Analytics demo
 
 **Business Analytics** was previously called Pulse. Only user-facing names changed. The product id, URL slug (`/products/pulse`, `/products/pulse/try`), the `src/features/pulse/` folder and component names such as `PulseDemo` keep the old name, so existing links, imports and tests still work.
@@ -244,7 +276,7 @@ The app is a static single-page app. The host must serve `index.html` for unknow
 
 ## Honest-by-design notes
 
-- All five products (Business Analytics, Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups and Leave & Attendance) are labelled **In development**, not live, even though their demos work.
+- All six products (Business Analytics, Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups, Leave & Attendance and Water Delivery Management) are labelled **In development**, not live, even though their demos work.
 - The inquiry form does not send anything yet and says so on the form and the confirmation page.
 - The privacy page is marked as a draft that needs review before launch.
 - No trademark or domain clearance has been checked for the name “Vixidia”.

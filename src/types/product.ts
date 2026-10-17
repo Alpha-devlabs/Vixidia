@@ -8,7 +8,7 @@ import type { LucideIcon } from 'lucide-react';
 export type ProductStatus = 'planned' | 'in_build' | 'live';
 
 /** Identifies which interactive demo component renders at /products/:slug/try. */
-export type DemoId = 'pulse-dashboard' | 'invoice-tracker' | 'crm' | 'tasks' | 'leave';
+export type DemoId = 'pulse-dashboard' | 'invoice-tracker' | 'crm' | 'tasks' | 'leave' | 'water';
 
 export interface Product {
   /** Stable internal id. Never shown in URLs, so the slug can change freely. */
@@ -18,6 +18,12 @@ export interface Product {
   name: string;
   /** Short category shown beside the name, e.g. "Business dashboard". */
   kind: string;
+  /**
+   * Set for industry-specific solutions (the industry they are built for). The
+   * solutions finder lists these under "Industry-specific"; others are general
+   * business tools.
+   */
+  industry?: string;
   /** The single question this product answers for its user. */
   question: string;
   status: ProductStatus;

@@ -10,6 +10,7 @@ import { InvoicePreview } from '../features/invoices/InvoicePreview';
 import { CrmPreview } from '../features/crm/CrmPreview';
 import { TasksPreview } from '../features/tasks/TasksPreview';
 import { LeavePreview } from '../features/leave/LeavePreview';
+import { WaterPreview } from '../features/water/WaterPreview';
 import { paths } from '../config/routes';
 import { demoPath, getProductBySlug, hasDemo, interestPath, statusInfo } from '../utils/products';
 import type { DemoId, Product } from '../types/product';
@@ -36,6 +37,10 @@ const previews: Record<DemoId, { render: () => ReactNode; caption: string }> = {
   leave: {
     render: () => <LeavePreview />,
     caption: 'A snapshot of the day’s attendance. Open the demo to check people in and out, browse past days, and approve or reject leave.',
+  },
+  water: {
+    render: () => <WaterPreview />,
+    caption: 'A snapshot of today’s delivery round. Open the demo to record deliveries, empty cans and payments, reschedule failed deliveries, and manage customers.',
   },
 };
 
@@ -91,7 +96,7 @@ function ProductDetail({ product }: { product: Product }) {
             <StatusBadge status={product.status} />
           </div>
           <h1 className="mt-5 text-4xl font-bold tracking-[-0.035em] sm:text-5xl">{product.name}</h1>
-          <p className="mt-1 text-lg font-medium text-fg-muted">{product.kind}</p>
+          <p className="mt-1 text-lg font-medium text-fg-muted">{product.industry ? `Industry-specific · ${product.industry}` : product.kind}</p>
           <p className="mt-3 max-w-[40ch] text-2xl font-medium tracking-[-0.015em] text-fg-muted sm:text-[1.7rem]">
             {product.tagline}
           </p>

@@ -1,4 +1,4 @@
-import { Dumbbell, Droplets, GraduationCap, Scissors, Truck, type LucideIcon } from 'lucide-react';
+import { Dumbbell, GraduationCap, Scissors, Truck, type LucideIcon } from 'lucide-react';
 
 /**
  * Industry-specific solution ideas shown in the solutions finder.
@@ -6,7 +6,8 @@ import { Dumbbell, Droplets, GraduationCap, Scissors, Truck, type LucideIcon } f
  * These are catalogue entries only: nothing here is built, in development or
  * available, and none has a page, route or demo. They exist so visitors can find
  * them by search and tell us they would use them. When an idea becomes a real
- * product it moves to the product registry (config/products.ts) instead.
+ * product it moves to the product registry (config/products.ts) instead, as
+ * Water Delivery Management did.
  */
 export interface SolutionIdea {
   id: string;
@@ -22,15 +23,6 @@ export interface SolutionIdea {
 }
 
 export const solutionIdeas: readonly SolutionIdea[] = [
-  {
-    id: 'water-delivery',
-    name: 'Water Delivery Management',
-    industry: 'Water delivery',
-    summary: 'For water can and jar suppliers who deliver to homes and offices on a regular round.',
-    wouldCover: ['Delivery scheduling', 'Customer subscriptions', 'Reusable-can tracking', 'Outstanding balances'],
-    searchKeywords: ['water', 'water delivery', 'water can', 'water cans', '20 litre', 'jar', 'bubble top', 'drinking water', 'mineral water', 'refill', 'subscriptions', 'delivery routes', 'empty cans', 'deposits', 'outstanding balance'],
-    icon: Droplets,
-  },
   {
     id: 'gym',
     name: 'Gym Membership Management',
