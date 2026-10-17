@@ -8,7 +8,7 @@ import type { LucideIcon } from 'lucide-react';
 export type ProductStatus = 'planned' | 'in_build' | 'live';
 
 /** Identifies which interactive demo component renders at /products/:slug/try. */
-export type DemoId = 'pulse-dashboard' | 'invoice-tracker' | 'crm' | 'tasks' | 'leave' | 'water' | 'gym' | 'salon';
+export type DemoId = 'pulse-dashboard' | 'invoice-tracker' | 'crm' | 'tasks' | 'leave' | 'water' | 'gym' | 'salon' | 'tuition';
 
 export interface Product {
   /** Stable internal id. Never shown in URLs, so the slug can change freely. */

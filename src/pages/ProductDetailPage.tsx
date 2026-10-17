@@ -13,6 +13,7 @@ import { LeavePreview } from '../features/leave/LeavePreview';
 import { WaterPreview } from '../features/water/WaterPreview';
 import { GymPreview } from '../features/gym/GymPreview';
 import { SalonPreview } from '../features/salon/SalonPreview';
+import { TuitionPreview } from '../features/tuition/TuitionPreview';
 import { paths } from '../config/routes';
 import { demoPath, getProductBySlug, hasDemo, interestPath, statusInfo } from '../utils/products';
 import type { DemoId, Product } from '../types/product';
@@ -51,6 +52,10 @@ const previews: Record<DemoId, { render: () => ReactNode; caption: string }> = {
   salon: {
     render: () => <SalonPreview />,
     caption: 'A snapshot of the day’s schedule. Open the demo to book, reschedule, cancel and check out appointments, and look up customers.',
+  },
+  tuition: {
+    render: () => <TuitionPreview />,
+    caption: 'A snapshot of today’s classes. Open the demo to take attendance, manage students and batches, generate monthly fees and record payments.',
   },
 };
 

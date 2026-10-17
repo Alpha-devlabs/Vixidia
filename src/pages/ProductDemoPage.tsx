@@ -14,6 +14,7 @@ import { LeaveApp } from '../features/leave/LeaveApp';
 import { WaterApp } from '../features/water/WaterApp';
 import { GymApp } from '../features/gym/GymApp';
 import { SalonApp } from '../features/salon/SalonApp';
+import { TuitionApp } from '../features/tuition/TuitionApp';
 import { brand } from '../config/brand';
 import { paths } from '../config/routes';
 import { getProductBySlug, productPath } from '../utils/products';
@@ -29,6 +30,7 @@ const demos: Record<DemoId, () => ReactNode> = {
   water: () => <WaterApp />,
   gym: () => <GymApp />,
   salon: () => <SalonApp />,
+  tuition: () => <TuitionApp />,
 };
 
 export function ProductDemoPage() {

@@ -1,4 +1,4 @@
-import { Activity, CalendarCheck, Contact, Droplets, Dumbbell, ListChecks, ReceiptText, Scissors } from 'lucide-react';
+import { Activity, CalendarCheck, Contact, Droplets, Dumbbell, GraduationCap, ListChecks, ReceiptText, Scissors } from 'lucide-react';
 import type { Product } from '../types/product';
 
 /**
@@ -334,6 +334,62 @@ export const products: readonly Product[] = [
       'appointments',
       'bookings',
       'appointment booking',
+    ],
+  },
+  {
+    id: 'tuition',
+    slug: 'tuition-centre-management',
+    name: 'Tuition Centre Management',
+    kind: 'Education & coaching',
+    industry: 'Tuition and coaching centres',
+    question: 'Who came to class today, and whose fees are still due?',
+    status: 'in_build',
+    icon: GraduationCap,
+    summary: 'Manage students, batches, attendance and monthly fees for a tuition or coaching centre.',
+    tagline: 'Students, batches, attendance and fees in one register.',
+    problem:
+      'Most tuition centres keep a register per batch, a fee book and a phone full of parents’ numbers. Attendance is hard to add up, part-paid fees get forgotten, and it takes an evening to see who still owes for the month.',
+    description:
+      'An industry-specific solution for tuition and coaching centres. Keep student and guardian records, organise batches with teachers, schedules and rooms, take attendance for each class, generate monthly fees per batch and record full or part payments, with balances and overdue fees always worked out.',
+    audience: ['Tuition centres', 'Coaching classes', 'Home tutors with batches', 'Small academies and institutes'],
+    benefits: [
+      'Take attendance in a minute and see each student’s attendance rate',
+      'Know which fees are due, part paid or overdue without adding up a fee book',
+      'See today’s classes, rooms and teachers at a glance',
+    ],
+    features: [
+      'A dashboard with active students, today’s classes, attendance and fees collected and outstanding',
+      'A student directory with guardian details, batches, attendance and fee history',
+      'Batches with subject, grades, teacher, weekly schedule, classroom and monthly fee, with room clashes prevented',
+      'Attendance sheets per class with present, late and absent, counting only students enrolled on that day',
+      'Monthly fee generation per student and batch that never creates duplicates',
+      'Full and part payments by cash, UPI or card, with balances and overdue fees',
+    ],
+    futureFeatures: ['Fee reminders to parents', 'Exam marks and progress reports', 'Teacher payouts'],
+    demo: { id: 'tuition', label: 'Try the demo', kind: 'interactive' },
+    searchKeywords: [
+      'tuition',
+      'tuition centre',
+      'tuition center',
+      'tuition classes',
+      'school tuition',
+      'tutor',
+      'tutors',
+      'tutoring',
+      'coaching',
+      'coaching centre',
+      'coaching center',
+      'coaching classes',
+      'academy',
+      'institute',
+      'students',
+      'student attendance',
+      'batches',
+      'batch management',
+      'classes',
+      'fees',
+      'fee collection',
+      'monthly fees',
     ],
   },
 ];

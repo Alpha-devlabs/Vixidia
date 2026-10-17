@@ -23,6 +23,7 @@ describe('product registry', () => {
       'Water Delivery Management',
       'Gym Membership Management',
       'Salon Management',
+      'Tuition Centre Management',
     ]);
   });
 
@@ -165,7 +166,7 @@ describe('paths and actions', () => {
   });
 
   it('marks only the industry products as industry-specific', () => {
-    expect(products.filter((p) => p.industry).map((p) => p.id)).toEqual(['water', 'gym', 'salon']);
+    expect(products.filter((p) => p.industry).map((p) => p.id)).toEqual(['water', 'gym', 'salon', 'tuition']);
   });
 
   it('shows Salon Management as an industry-specific product in development with a sample-data demo', () => {
@@ -178,6 +179,18 @@ describe('paths and actions', () => {
     for (const k of ['salon', 'beauty parlour', 'beauty salon', 'haircut', 'appointments', 'stylist booking', 'facial', 'manicure']) expect(salon.searchKeywords).toContain(k);
     const text = [salon.summary, salon.description, salon.tagline, ...salon.features, ...salon.benefits].join(' ');
     expect(/commission|inventory|stock|retail|GST|WhatsApp|SMS|gateway|payroll|online booking/i.test(text)).toBe(false);
+  });
+
+  it('shows Tuition Centre Management as an industry-specific product in development with a sample-data demo', () => {
+    const tuition = getProductById('tuition')!;
+    expect(tuition).toMatchObject({ name: 'Tuition Centre Management', slug: 'tuition-centre-management', kind: 'Education & coaching', status: 'in_build' });
+    expect(tuition.demo).toEqual({ id: 'tuition', label: 'Try the demo', kind: 'interactive' });
+    expect(getProductBySlug('tuition-centre-management')).toBe(tuition);
+    expect(demoPath(tuition)).toBe('/products/tuition-centre-management/try');
+    expect(productActions(tuition).primary).toEqual({ label: 'Try demo', to: '/products/tuition-centre-management/try' });
+    for (const k of ['tuition centre', 'tuition classes', 'coaching centre', 'student attendance', 'batch management', 'fee collection', 'school tuition']) expect(tuition.searchKeywords).toContain(k);
+    const text = [tuition.summary, tuition.description, tuition.tagline, ...tuition.features, ...tuition.benefits].join(' ');
+    expect(/WhatsApp|SMS|gateway|payroll|online class|video|login|GST/i.test(text)).toBe(false);
   });
 
   it('shows Simple CRM as in development with a sample-data demo', () => {

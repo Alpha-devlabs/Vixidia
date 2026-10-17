@@ -1,6 +1,6 @@
 # Vixidia website
 
-Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`), **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`), **Leave & Attendance** (`/products/leave-attendance/try`) and the industry-specific solutions **Water Delivery Management** (`/products/water-delivery-management/try`), **Gym Membership Management** (`/products/gym-membership-management/try`) and **Salon Management** (`/products/salon-management/try`).
+Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`), **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`), **Leave & Attendance** (`/products/leave-attendance/try`) and the industry-specific solutions **Water Delivery Management** (`/products/water-delivery-management/try`), **Gym Membership Management** (`/products/gym-membership-management/try`), **Salon Management** (`/products/salon-management/try`) and **Tuition Centre Management** (`/products/tuition-centre-management/try`).
 
 Stack: React 19, TypeScript (strict), Vite, React Router 7, Tailwind CSS 4, Lucide icons, Vitest.
 
@@ -37,6 +37,7 @@ src/
     water/        Water Delivery Management demo: rules (waterLogic.ts), state hook, today's run, orders, customers
     gym/          Gym Membership Management demo: rules (gymLogic.ts), state hook, dashboard, members, attendance, payments
     salon/        Salon Management demo: rules (salonLogic.ts), state hook, schedule, booking, customers, services
+    tuition/      Tuition Centre Management demo: rules (tuitionLogic.ts), state hook, dashboard, students, batches, attendance, fees
     inquiry/      Inquiry validation and the submission adapter
   hooks/          usePageMeta (document title + meta description)
   pages/          One component per route
@@ -132,7 +133,7 @@ Open questions, not decided in code:
 
 The **Solutions** page (main nav and footer; the URL stays `/products`) is a search-first catalogue.
 
-- **Data:** products come straight from the product registry (`src/config/products.ts`), each with a `searchKeywords` list. A product with an `industry` (Water Delivery Management, Gym Membership Management and Salon Management) is listed under Industry-specific; the others are General business tools. Planned industry ideas live in `src/config/solutionIdeas.ts`. They are catalogue entries only, with no route, page or demo. When an idea gets a real demo it moves to the registry, as Water Delivery Management, Gym Membership Management and Salon Management did, so it is never listed twice.
+- **Data:** products come straight from the product registry (`src/config/products.ts`), each with a `searchKeywords` list. A product with an `industry` (Water Delivery Management, Gym Membership Management, Salon Management and Tuition Centre Management) is listed under Industry-specific; the others are General business tools. Planned industry ideas live in `src/config/solutionIdeas.ts`. They are catalogue entries only, with no route, page or demo. When an idea gets a real demo it moves to the registry, as Water Delivery Management, Gym Membership Management, Salon Management and Tuition Centre Management did, so it is never listed twice.
 - **Search (`src/features/solutions/catalog.ts`):**
   - Text is normalised: lower case, accents removed, `&` read as "and", punctuation removed, simple plurals reduced.
   - Every meaningful query word must match the start of a word in the name, category or industry, keywords or summary. Filler words such as "software" or "management" are ignored.
@@ -310,6 +311,33 @@ Rules live in `salonLogic.ts`:
 
 Not in this demo: partial payments or discounts, refunds, reminders or confirmations, online booking, calendar sync, commissions, payroll, stock or retail, GST.
 
+## Tuition Centre Management (demo)
+
+`/products/tuition-centre-management` (details) and `/products/tuition-centre-management/try` (demo). `src/features/tuition/` has:
+- **Dashboard:** active students, active batches, classes and attendance for a chosen day, fees collected in a chosen month, fees outstanding (with overdue), the day's classes with "Take attendance", a "Coming up" list and fee follow-ups (overdue first).
+- **Students:** search by name, school, guardian, phone or "grade N"; grade and status (active or left) filters. Add with optional batches matched to the grade; edit details; mark as left or make active. The profile shows guardian, batches, attendance and every fee with its payments.
+- **Batches:** subject, grades, teacher, weekly days and start time, duration, classroom and monthly fee. Create, edit (including Not running), enrol students (optionally at their own fee) and remove them.
+- **Attendance:** choose a batch and class date; mark Present, Late or Absent, "Mark the rest present", save or update.
+- **Fees:** filters for month, batch, status and search; charged, collected, still due and overdue totals; generate next month's fees; record full or part payments by cash, UPI or card; recent payments.
+
+It runs on a fictional centre, "Bright Path Tuition Centre" in Nagpur, from `src/data/tuitionSample.ts`, on a fixed sample day (Wednesday 21 October 2026). Names, schools and phone numbers are invented. State is held in memory by `useTuitionDemo.ts`, so **Reset demo** or a reload restores the sample data.
+
+Rules live in `tuitionLogic.ts`:
+- **Classes:** generated from each batch's weekly schedule from 1 September to 4 weeks ahead. Batches start between 7:00 am and 9:00 pm, last 30–180 minutes in 15-minute steps, and can't share a classroom at overlapping times.
+- **Enrolment:** runs from a start date (inclusive) to an end date (exclusive). A student can only join an active batch covering their grade, once. Removing a student or marking them as left ends enrolments today and keeps past attendance and fees.
+- **Attendance:** only students enrolled on the class date are on the sheet, so a student who joined later or left earlier doesn't count. Every student must be marked; future classes can't be marked. Attendance % = (present + late) ÷ students on the sheet.
+- **Fees (integer paise):** one fee per student, batch and month, at the student's own fee if set or the batch fee at the time it is generated. Generating never duplicates and skips inactive batches and students who have left. Fees fall due on the 25th, or 7 days after joining if later. Status: paid, part paid, due, or overdue after the due date.
+- **Payments:** more than ₹0 and no more than the balance. "Collected" for a month is the sum of payments dated in that month.
+- **Students:** guardian phone required (10-digit numbers get +91); a duplicate is the same name with the same last 10 phone digits.
+
+**Sample scenario** (checked in `tuitionLogic.test.ts`):
+- 22 students (20 active, 2 left), 6 batches (5 running), 4 teachers.
+- Today has 3 classes; English 6–8's attendance is already taken.
+- October: ₹48,500 charged, ₹35,000 collected; ₹15,400 outstanding across all months, of which ₹1,900 is overdue, owed by 8 students.
+- Generating October again adds nothing; November adds 31 fees.
+
+Not in this demo: fee reminders or messages to parents, receipts, discounts or refunds beyond setting a student's own fee, exam marks, teacher payouts or payroll, online classes, logins, payment gateways, GST.
+
 ## The Business Analytics demo
 
 **Business Analytics** was previously called Pulse. Only user-facing names changed. The product id, URL slug (`/products/pulse`, `/products/pulse/try`), the `src/features/pulse/` folder and component names such as `PulseDemo` keep the old name, so existing links, imports and tests still work.
@@ -350,7 +378,7 @@ The app is a static single-page app. The host must serve `index.html` for unknow
 
 ## Honest-by-design notes
 
-- All eight products (Business Analytics, Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups, Leave & Attendance, Water Delivery Management, Gym Membership Management and Salon Management) are labelled **In development**, not live, even though their demos work.
+- All nine products (Business Analytics, Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups, Leave & Attendance, Water Delivery Management, Gym Membership Management, Salon Management and Tuition Centre Management) are labelled **In development**, not live, even though their demos work.
 - The inquiry form does not send anything yet and says so on the form and the confirmation page.
 - The privacy page is marked as a draft that needs review before launch.
 - No trademark or domain clearance has been checked for the name “Vixidia”.

@@ -1,4 +1,4 @@
-import { GraduationCap, Truck, type LucideIcon } from 'lucide-react';
+import { Truck, type LucideIcon } from 'lucide-react';
 
 /**
  * Industry-specific solution ideas shown in the solutions finder.
@@ -7,7 +7,8 @@ import { GraduationCap, Truck, type LucideIcon } from 'lucide-react';
  * available, and none has a page, route or demo. They exist so visitors can find
  * them by search and tell us they would use them. When an idea becomes a real
  * product it moves to the product registry (config/products.ts) instead, as
- * Water Delivery Management, Gym Membership Management and Salon Management did.
+ * Water Delivery Management, Gym Membership Management, Salon Management and
+ * Tuition Centre Management did.
  */
 export interface SolutionIdea {
   id: string;
@@ -23,15 +24,6 @@ export interface SolutionIdea {
 }
 
 export const solutionIdeas: readonly SolutionIdea[] = [
-  {
-    id: 'tuition',
-    name: 'Tuition Centre Management',
-    industry: 'Education & coaching',
-    summary: 'For tuition and coaching centres managing students, batches and fees.',
-    wouldCover: ['Student records', 'Fee tracking', 'Attendance'],
-    searchKeywords: ['tuition', 'tuition centre', 'tuition center', 'coaching', 'coaching centre', 'coaching classes', 'classes', 'tutor', 'tutors', 'academy', 'institute', 'students', 'batches', 'fees', 'fee collection', 'attendance'],
-    icon: GraduationCap,
-  },
   {
     id: 'distributor',
     name: 'Small Distributor Management',
