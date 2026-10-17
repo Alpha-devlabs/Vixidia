@@ -24,6 +24,7 @@ describe('product registry', () => {
       'Gym Membership Management',
       'Salon Management',
       'Tuition Centre Management',
+      'Small Distributor Management',
     ]);
   });
 
@@ -166,7 +167,7 @@ describe('paths and actions', () => {
   });
 
   it('marks only the industry products as industry-specific', () => {
-    expect(products.filter((p) => p.industry).map((p) => p.id)).toEqual(['water', 'gym', 'salon', 'tuition']);
+    expect(products.filter((p) => p.industry).map((p) => p.id)).toEqual(['water', 'gym', 'salon', 'tuition', 'distributor']);
   });
 
   it('shows Salon Management as an industry-specific product in development with a sample-data demo', () => {
@@ -191,6 +192,17 @@ describe('paths and actions', () => {
     for (const k of ['tuition centre', 'tuition classes', 'coaching centre', 'student attendance', 'batch management', 'fee collection', 'school tuition']) expect(tuition.searchKeywords).toContain(k);
     const text = [tuition.summary, tuition.description, tuition.tagline, ...tuition.features, ...tuition.benefits].join(' ');
     expect(/WhatsApp|SMS|gateway|payroll|online class|video|login|GST/i.test(text)).toBe(false);
+  });
+
+  it('shows Small Distributor Management as an industry-specific product in development with a sample-data demo', () => {
+    const d = getProductById('distributor')!;
+    expect(d).toMatchObject({ name: 'Small Distributor Management', slug: 'small-distributor-management', kind: 'Wholesale & distribution', status: 'in_build' });
+    expect(d.demo).toEqual({ id: 'distributor', label: 'Try the demo', kind: 'interactive' });
+    expect(getProductBySlug('small-distributor-management')).toBe(d);
+    expect(productActions(d).primary).toEqual({ label: 'Try demo', to: '/products/small-distributor-management/try' });
+    for (const k of ['small distributor', 'wholesale', 'inventory', 'stock management', 'supplier purchases', 'sales orders', 'stock movement', 'outstanding payments']) expect(d.searchKeywords).toContain(k);
+    const text = [d.summary, d.description, d.tagline, ...d.features, ...d.benefits].join(' ');
+    expect(/GST|tax|barcode|warehouses|accounting|gateway|WhatsApp|SMS|login|batch|expiry/i.test(text)).toBe(false);
   });
 
   it('shows Simple CRM as in development with a sample-data demo', () => {

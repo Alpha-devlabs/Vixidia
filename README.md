@@ -1,6 +1,6 @@
 # Vixidia website
 
-Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`), **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`), **Leave & Attendance** (`/products/leave-attendance/try`) and the industry-specific solutions **Water Delivery Management** (`/products/water-delivery-management/try`), **Gym Membership Management** (`/products/gym-membership-management/try`), **Salon Management** (`/products/salon-management/try`) and **Tuition Centre Management** (`/products/tuition-centre-management/try`).
+Company website and product catalogue for Vixidia, with a browser-only interactive demo of **Business Analytics** at `/products/pulse/try` and interactive sample-data demos of the **Invoice & Payment Tracker** (`/products/invoice-payment-tracker/try`), **Simple CRM** (`/products/simple-crm/try`), **Tasks & Follow-ups** (`/products/tasks-follow-ups/try`), **Leave & Attendance** (`/products/leave-attendance/try`) and the industry-specific solutions **Water Delivery Management** (`/products/water-delivery-management/try`), **Gym Membership Management** (`/products/gym-membership-management/try`), **Salon Management** (`/products/salon-management/try`), **Tuition Centre Management** (`/products/tuition-centre-management/try`) and **Small Distributor Management** (`/products/small-distributor-management/try`).
 
 Stack: React 19, TypeScript (strict), Vite, React Router 7, Tailwind CSS 4, Lucide icons, Vitest.
 
@@ -38,6 +38,7 @@ src/
     gym/          Gym Membership Management demo: rules (gymLogic.ts), state hook, dashboard, members, attendance, payments
     salon/        Salon Management demo: rules (salonLogic.ts), state hook, schedule, booking, customers, services
     tuition/      Tuition Centre Management demo: rules (tuitionLogic.ts), state hook, dashboard, students, batches, attendance, fees
+    distributor/  Small Distributor Management demo: rules (distributorLogic.ts), state hook, inventory, purchases, orders, payments
     inquiry/      Inquiry validation and the submission adapter
   hooks/          usePageMeta (document title + meta description)
   pages/          One component per route
@@ -133,7 +134,7 @@ Open questions, not decided in code:
 
 The **Solutions** page (main nav and footer; the URL stays `/products`) is a search-first catalogue.
 
-- **Data:** products come straight from the product registry (`src/config/products.ts`), each with a `searchKeywords` list. A product with an `industry` (Water Delivery Management, Gym Membership Management, Salon Management and Tuition Centre Management) is listed under Industry-specific; the others are General business tools. Planned industry ideas live in `src/config/solutionIdeas.ts`. They are catalogue entries only, with no route, page or demo. When an idea gets a real demo it moves to the registry, as Water Delivery Management, Gym Membership Management, Salon Management and Tuition Centre Management did, so it is never listed twice.
+- **Data:** products come straight from the product registry (`src/config/products.ts`), each with a `searchKeywords` list. A product with an `industry` (Water Delivery Management, Gym Membership Management, Salon Management, Tuition Centre Management and Small Distributor Management) is listed under Industry-specific; the others are General business tools. Planned industry ideas live in `src/config/solutionIdeas.ts`. They are catalogue entries only, with no route, page or demo. When an idea gets a real demo it moves to the registry, as Water Delivery Management, Gym Membership Management, Salon Management, Tuition Centre Management and Small Distributor Management did, so it is never listed twice. The list is currently empty: the finder keeps its Planned ideas filter, which shows nothing until a new idea is added.
 - **Search (`src/features/solutions/catalog.ts`):**
   - Text is normalised: lower case, accents removed, `&` read as "and", punctuation removed, simple plurals reduced.
   - Every meaningful query word must match the start of a word in the name, category or industry, keywords or summary. Filler words such as "software" or "management" are ignored.
@@ -338,6 +339,35 @@ Rules live in `tuitionLogic.ts`:
 
 Not in this demo: fee reminders or messages to parents, receipts, discounts or refunds beyond setting a student's own fee, exam marks, teacher payouts or payroll, online classes, logins, payment gateways, GST.
 
+## Small Distributor Management (demo)
+
+`/products/small-distributor-management` (details) and `/products/small-distributor-management/try` (demo). `src/features/distributor/` has:
+- **Dashboard:** a reporting period (this month so far, last 7 days, last 30 days, last month). "In this period" shows sales (orders delivered), collected from customers, purchases (received) and paid to suppliers side by side, so sales are never confused with money received. "Right now" shows active products, low stock, stock value at cost and at selling price, what customers owe you and what you owe suppliers (with overdue amounts). Plus low stock, recent orders and recent activity.
+- **Products & Inventory:** search, category, status and stock filters; add and edit products; stock adjustments with a required reason; each product's movements and a check that they add up. A **Stock movements** tab lists every movement with date, product, type, reference, reason, quantity in or out and the resulting balance.
+- **Suppliers / Customers:** search by name, contact, phone or area; status and balance filters; add and edit; each one's purchases or orders and outstanding balance.
+- **Purchases:** draft → received, or cancelled. Create (save as draft, or save and receive), edit drafts, receive with a confirmation, record payments to the supplier.
+- **Sales Orders:** draft → confirmed → delivered, or cancelled. Create (save as draft, or save and confirm), edit drafts and confirmed orders, confirm, mark delivered, record payments from the customer.
+- **Payments:** balances to collect and to pay (overdue vs not yet due), quick Pay buttons, and the full payment history with direction and method filters.
+
+It runs on a fictional wholesaler, "Kaveri Wholesale Distributors" in Pune, from `src/data/distributorSample.ts`, on a fixed sample day (Friday 23 October 2026). Products are generic (no brand names); businesses, people, phones and emails are invented. The sample history from 1 September isn't typed in as results: it's replayed through the demo's own rules (receive, confirm, deliver, pay, adjust), so it reconciles by construction. State is held in memory by `useDistributorDemo.ts`, so **Reset demo** or a reload restores the sample data.
+
+Rules live in `distributorLogic.ts`:
+- **Stock** is counted in whole units of each product's unit (bag, carton, case, box, pack or piece). It is never stored on the product: it is the sum of the product's stock movements, and movements are only written by `moveStock`, which applies a whole batch or nothing and refuses anything that would go below zero. For every product, opening stock + purchases received + adjustments up − orders delivered − adjustments down = current stock.
+- **Purchases:** drafts and cancelled purchases never touch stock; editing a draft changes nothing. Receiving adds every line once and can't be repeated. Received purchases can't be edited or cancelled.
+- **Orders:** stock is deducted once, when an order is delivered. Confirming checks there's enough stock not already promised to other confirmed orders, but deducts nothing. Delivery checks stock on hand and is all-or-nothing, with a message naming what's short. Delivered orders can't be edited or cancelled (there's no correction workflow in this demo).
+- **Lines** copy the product name, SKU, unit and price or cost when saved, so later product edits don't change history. Inactive products, suppliers and customers stay on past documents but can't be used on new or edited ones. References must be unique; quantities are whole numbers from 1 to 1,00,000. There is no tax or discount: total = sum of the lines.
+- **Money (integer paise):** payments go against a delivered order or a received purchase only, by cash, UPI or bank transfer; more than ₹0 and no more than the balance. Each payment form has a request id, so a double submit records it once. Payments can't be edited or deleted. Receivables = delivered orders − customer payments; payables = received purchases − supplier payments; drafts, confirmed and cancelled documents owe nothing. The due date is the delivery or receiving date plus the customer's or supplier's credit days; overdue means a balance after that date.
+- **Inventory value** is stock × the product's current purchase cost; "at selling price" is stock × current selling price and is only a potential value.
+
+**Sample scenario** (checked in `distributorLogic.test.ts`):
+- 18 products in 4 categories (17 active, 5 low on stock), 5 suppliers (1 inactive), 8 customers (1 inactive).
+- 12 purchases (9 received, 2 draft, 1 cancelled) and 23 orders (18 delivered, 2 confirmed, 2 draft, 1 cancelled), 21 payments, 6 adjustments.
+- 1–23 Oct: ₹2,12,190 sales vs ₹2,24,920 collected; ₹2,06,000 purchases vs ₹3,46,550 paid to suppliers.
+- Customers owe ₹1,40,440 (₹45,040 overdue); you owe suppliers ₹2,03,950 (₹26,600 overdue). Stock is worth ₹7,69,740 at cost.
+- Draft SO-1023 asks for 12 boxes of coffee with 9 in stock, so confirming it shows the not-enough-stock message.
+
+Not in this demo: tax or GST, discounts, invoices or accounting, returns or credit notes, multiple warehouses, batch or expiry tracking, barcode scanning, delivery routes, reminders or messages, payment gateways, logins.
+
 ## The Business Analytics demo
 
 **Business Analytics** was previously called Pulse. Only user-facing names changed. The product id, URL slug (`/products/pulse`, `/products/pulse/try`), the `src/features/pulse/` folder and component names such as `PulseDemo` keep the old name, so existing links, imports and tests still work.
@@ -378,7 +408,7 @@ The app is a static single-page app. The host must serve `index.html` for unknow
 
 ## Honest-by-design notes
 
-- All nine products (Business Analytics, Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups, Leave & Attendance, Water Delivery Management, Gym Membership Management, Salon Management and Tuition Centre Management) are labelled **In development**, not live, even though their demos work.
+- All ten products (Business Analytics, Invoice & Payment Tracker, Simple CRM, Tasks & Follow-ups, Leave & Attendance, Water Delivery Management, Gym Membership Management, Salon Management, Tuition Centre Management and Small Distributor Management) are labelled **In development**, not live, even though their demos work.
 - The inquiry form does not send anything yet and says so on the form and the confirmation page.
 - The privacy page is marked as a draft that needs review before launch.
 - No trademark or domain clearance has been checked for the name “Vixidia”.

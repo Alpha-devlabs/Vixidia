@@ -14,6 +14,7 @@ import { WaterPreview } from '../features/water/WaterPreview';
 import { GymPreview } from '../features/gym/GymPreview';
 import { SalonPreview } from '../features/salon/SalonPreview';
 import { TuitionPreview } from '../features/tuition/TuitionPreview';
+import { DistributorPreview } from '../features/distributor/DistributorPreview';
 import { paths } from '../config/routes';
 import { demoPath, getProductBySlug, hasDemo, interestPath, statusInfo } from '../utils/products';
 import type { DemoId, Product } from '../types/product';
@@ -56,6 +57,10 @@ const previews: Record<DemoId, { render: () => ReactNode; caption: string }> = {
   tuition: {
     render: () => <TuitionPreview />,
     caption: 'A snapshot of today’s classes. Open the demo to take attendance, manage students and batches, generate monthly fees and record payments.',
+  },
+  distributor: {
+    render: () => <DistributorPreview />,
+    caption: 'A snapshot of this month’s figures and low stock. Open the demo to receive purchases, deliver orders, adjust stock and record payments both ways.',
   },
 };
 

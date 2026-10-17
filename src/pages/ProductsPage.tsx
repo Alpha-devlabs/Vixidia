@@ -40,6 +40,7 @@ export function ProductsPage() {
   const [request, setRequest] = useState<{ ideaName?: string; businessType?: string; key: number } | null>(null);
 
   const catalog = useMemo(() => buildCatalog(products, solutionIdeas), []);
+  const hasIdeas = catalog.some((e) => e.type === 'idea');
   const results = useMemo(() => searchCatalog(catalog, query, category), [catalog, query, category]);
   const counts = useMemo(() => categoryCounts(catalog, query), [catalog, query]);
   const filtered = query.trim() !== '' || category !== 'all';
@@ -65,8 +66,8 @@ export function ProductsPage() {
           <p className="text-sm font-semibold text-accent-strong">Solutions</p>
           <h1 className="mt-2 max-w-3xl text-4xl font-bold tracking-[-0.03em] text-balance sm:text-5xl">Find software built around how your business works</h1>
           <p className="mt-4 max-w-[62ch] text-lg leading-relaxed text-fg-muted">
-            Search by the kind of business you run or the problem you want to solve. Try the tools that have demos, or tell us which planned idea you
-            need.
+            Search by the kind of business you run or the problem you want to solve. Try the tools that have demos, or tell us{' '}
+            {hasIdeas ? 'which planned idea you need' : 'what you need'}.
           </p>
 
           <form
@@ -155,12 +156,14 @@ export function ProductsPage() {
           <span className="inline-flex items-center gap-1.5">
             <StatusBadge status="in_build" /> Being built; try the demo with sample data
           </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Badge tone="neutral" icon={Lightbulb} dashed>
-              Planned idea
-            </Badge>
-            Not built yet and no demo; tell us if you’d use it
-          </span>
+          {hasIdeas ? (
+            <span className="inline-flex items-center gap-1.5">
+              <Badge tone="neutral" icon={Lightbulb} dashed>
+                Planned idea
+              </Badge>
+              Not built yet and no demo; tell us if you’d use it
+            </span>
+          ) : null}
         </p>
 
         <h2 className="sr-only">Results</h2>

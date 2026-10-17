@@ -1,4 +1,4 @@
-import { Truck, type LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 /**
  * Industry-specific solution ideas shown in the solutions finder.
@@ -7,8 +7,8 @@ import { Truck, type LucideIcon } from 'lucide-react';
  * available, and none has a page, route or demo. They exist so visitors can find
  * them by search and tell us they would use them. When an idea becomes a real
  * product it moves to the product registry (config/products.ts) instead, as
- * Water Delivery Management, Gym Membership Management, Salon Management and
- * Tuition Centre Management did.
+ * Water Delivery Management, Gym Membership Management, Salon Management,
+ * Tuition Centre Management and Small Distributor Management did.
  */
 export interface SolutionIdea {
   id: string;
@@ -23,14 +23,5 @@ export interface SolutionIdea {
   icon: LucideIcon;
 }
 
-export const solutionIdeas: readonly SolutionIdea[] = [
-  {
-    id: 'distributor',
-    name: 'Small Distributor Management',
-    industry: 'Wholesale & distribution',
-    summary: 'For small distributors and wholesalers supplying shops on credit.',
-    wouldCover: ['Orders', 'Inventory', 'Customer balances', 'Delivery tracking'],
-    searchKeywords: ['distributor', 'distributors', 'distribution', 'wholesale', 'wholesaler', 'dealer', 'stockist', 'supplier', 'inventory', 'stock', 'orders', 'deliveries', 'retailers', 'credit', 'outstanding balance'],
-    icon: Truck,
-  },
-];
+// Every idea so far has become a product with a demo. New ideas go here until they do.
+export const solutionIdeas: readonly SolutionIdea[] = [];

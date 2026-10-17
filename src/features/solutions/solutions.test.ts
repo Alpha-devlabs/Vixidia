@@ -9,11 +9,12 @@ const names = (q: string, f: Parameters<typeof searchCatalog>[2] = 'all') => sea
 const first = (q: string) => names(q)[0];
 
 describe('catalogue', () => {
-  it('reuses the registry products unchanged and adds the planned ideas', () => {
+  it('reuses the registry products unchanged; every former idea is now a product', () => {
     const productEntries = catalog.filter((e) => e.type === 'product');
     expect(productEntries.map((e) => e.id)).toEqual(products.map((p) => p.id));
     for (const e of productEntries) if (e.type === 'product') expect(e.product).toBe(products.find((p) => p.id === e.id));
-    expect(catalog.filter((e) => e.type === 'idea').map((e) => e.name)).toEqual(['Small Distributor Management']);
+    expect(catalog.filter((e) => e.type === 'idea').map((e) => e.name)).toEqual([]);
+    expect(solutionIdeas).toHaveLength(0);
   });
 
   it('links existing products to their current detail and demo routes', () => {
@@ -27,6 +28,7 @@ describe('catalogue', () => {
     expect(byId('gym')).toMatchObject({ detailPath: '/products/gym-membership-management', demoPath: '/products/gym-membership-management/try' });
     expect(byId('salon')).toMatchObject({ detailPath: '/products/salon-management', demoPath: '/products/salon-management/try' });
     expect(byId('tuition')).toMatchObject({ detailPath: '/products/tuition-centre-management', demoPath: '/products/tuition-centre-management/try' });
+    expect(byId('distributor')).toMatchObject({ detailPath: '/products/small-distributor-management', demoPath: '/products/small-distributor-management/try' });
   });
 
   it('lists Water Delivery Management once, as an industry-specific product with a demo, not a planned idea', () => {
@@ -39,7 +41,7 @@ describe('catalogue', () => {
   });
 
   it('marks only industry products as industry-specific; the general tools stay general', () => {
-    for (const e of catalog.filter((x) => x.type === 'product')) expect(e.category).toBe(['water', 'gym', 'salon', 'tuition'].includes(e.id) ? 'industry' : 'general');
+    for (const e of catalog.filter((x) => x.type === 'product')) expect(e.category).toBe(['water', 'gym', 'salon', 'tuition', 'distributor'].includes(e.id) ? 'industry' : 'general');
   });
 
   it('lists Salon Management once, as an industry-specific product with a demo, not a planned idea', () => {
@@ -56,6 +58,14 @@ describe('catalogue', () => {
     expect(tuition[0]).toMatchObject({ type: 'product', id: 'tuition', category: 'industry', label: 'Education & coaching' });
     expect(solutionIdeas.some((i) => i.id === 'tuition' || /tuition/i.test(i.name))).toBe(false);
     expect(searchCatalog(catalog, '', 'planned').some((e) => /tuition/i.test(e.name))).toBe(false);
+  });
+
+  it('lists Small Distributor Management once, as an industry-specific product with a demo, not a planned idea', () => {
+    const d = catalog.filter((e) => /distributor/i.test(e.name));
+    expect(d).toHaveLength(1);
+    expect(d[0]).toMatchObject({ type: 'product', id: 'distributor', category: 'industry', label: 'Wholesale & distribution' });
+    expect(solutionIdeas.some((i) => i.id === 'distributor')).toBe(false);
+    expect(searchCatalog(catalog, '', 'planned')).toEqual([]);
   });
 
   it('lists Gym Membership Management once, as an industry-specific product with a demo, not a planned idea', () => {
@@ -118,6 +128,7 @@ describe('search', () => {
     expect(first('sales')).toBe('Business Analytics');
     expect(first('payments')).toBe('Invoice & Payment Tracker');
     for (const q of ['tuition centre', 'tuition classes', 'coaching centre', 'student attendance', 'batch management', 'fee collection', 'school tuition']) expect(first(q), q).toBe('Tuition Centre Management');
+    for (const q of ['small distributor', 'wholesale', 'inventory', 'stock management', 'supplier purchases', 'sales orders', 'stock movement', 'outstanding payments']) expect(first(q), q).toBe('Small Distributor Management');
   });
 
   it('understands industries and synonyms', () => {
@@ -171,6 +182,9 @@ describe('categories', () => {
     expect(names('tuition', 'industry')).toEqual(['Tuition Centre Management']);
     expect(names('tuition', 'planned')).toEqual([]);
     expect(names('tuition', 'general')).toEqual([]);
+    expect(names('wholesale', 'industry')).toEqual(['Small Distributor Management']);
+    expect(names('wholesale', 'planned')).toEqual([]);
+    expect(names('', 'planned')).toEqual([]);
     expect(names('gym', 'industry')).toEqual(['Gym Membership Management']);
     expect(names('gym', 'general')).toEqual([]);
     expect(names('gym', 'planned')).toEqual([]);
@@ -181,7 +195,7 @@ describe('categories', () => {
   });
 
   it('count each category for the current query; "all" clears the filter', () => {
-    expect(categoryCounts(catalog, '')).toEqual({ all: 10, general: 5, industry: 5, planned: 1 });
+    expect(categoryCounts(catalog, '')).toEqual({ all: 10, general: 5, industry: 5, planned: 0 });
     expect(categoryCounts(catalog, 'water')).toEqual({ all: 1, general: 0, industry: 1, planned: 0 });
     expect(categoryCounts(catalog, 'attendance')).toEqual({ all: 3, general: 1, industry: 2, planned: 0 });
     expect(names('', 'all')).toHaveLength(10);
