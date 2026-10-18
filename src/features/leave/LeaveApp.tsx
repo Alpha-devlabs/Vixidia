@@ -36,6 +36,7 @@ import { controlClass } from '../../components/forms';
 import { ToastRegion, useToast } from '../../components/Toast';
 import { formatDate, formatLongDay, pluralize } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useResetDemo } from '../demo/useResetDemo';
 
 type Section = 'attendance' | 'leave';
 const nav: { name: Section; label: string; icon: LucideIcon }[] = [
@@ -49,7 +50,7 @@ const nav: { name: Section; label: string; icon: LucideIcon }[] = [
  * counts, the list and employee profiles together.
  */
 export function LeaveApp() {
-  const { book, actions } = useLeaveDemo();
+  const { book, actions, changed } = useLeaveDemo();
   const [section, setSection] = useState<Section>('attendance');
   const [date, setDate] = useState(book.today);
   const [profileFor, setProfileFor] = useState<string | null>(null);
@@ -69,12 +70,13 @@ export function LeaveApp() {
     setRequestFor({ employeeId });
     setSession((n) => n + 1);
   };
-  const reset = () => {
+  const resetNow = () => {
     actions.reset();
     setDate(book.today);
     setProfileFor(null);
     notify('Sample data restored.');
   };
+  const { reset, resetDialog } = useResetDemo(changed, resetNow);
   const decide = (id: string, decision: 'approved' | 'rejected') => {
     const r = actions.decideLeave(id, decision);
     notify(r.ok ? `${decision === 'approved' ? 'Approved' : 'Rejected'}: ${nameOf(r.request.employeeId)}, ${range(r.request)}` : (Object.values(r.errors)[0] ?? 'Couldn’t update this request.'), r.ok ? 'success' : 'info');
@@ -186,6 +188,7 @@ export function LeaveApp() {
         onClose={() => setProfileFor(null)}
         onRequestLeave={openRequest}
       />
+      {resetDialog}
       <ToastRegion toast={toast} />
     </div>
   );

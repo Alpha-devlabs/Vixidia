@@ -10,6 +10,8 @@ import { addInteraction, createCustomer, crmOverview, customerRows, updateCustom
  */
 export function useCrmDemo() {
   const [book, setBook] = useState<CrmBook>(() => createCrmSample());
+  // The data as last loaded or reset; anything else means the visitor has changed something.
+  const [baseline, setBaseline] = useState<CrmBook>(book);
   // Keep the first "today" so a reset restores exactly the data first shown.
   const [initialToday] = useState(book.today);
 
@@ -26,9 +28,13 @@ export function useCrmDemo() {
       createCustomer: (input: CustomerInput) => commit(createCustomer(book, input)),
       updateCustomer: (id: string, input: CustomerInput) => commit(updateCustomer(book, id, input)),
       addInteraction: (input: InteractionInput) => commit(addInteraction(book, input)),
-      reset: () => setBook(createCrmSample(initialToday)),
+      reset: () => {
+        const fresh = createCrmSample(initialToday);
+        setBaseline(fresh);
+        setBook(fresh);
+      },
     };
   }, [book, initialToday]);
 
-  return { book, rows, summary, actions };
+  return { book, rows, summary, actions, changed: book !== baseline };
 }

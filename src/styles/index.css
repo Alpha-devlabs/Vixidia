@@ -209,6 +209,12 @@
   ::selection {
     background: var(--accent-soft);
   }
+  /* The demo guide's "Show me": a brief, static ring around the suggested control. */
+  [data-demo-highlight] {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
   dialog {
     color: var(--fg);
   }

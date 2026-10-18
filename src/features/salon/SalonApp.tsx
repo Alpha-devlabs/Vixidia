@@ -38,6 +38,7 @@ import { ToastRegion, useToast } from '../../components/Toast';
 import { addDays } from '../../utils/dates';
 import { formatLongDay, pluralize } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useResetDemo } from '../demo/useResetDemo';
 
 type Section = 'schedule' | 'customers' | 'services';
 const nav: { name: Section; label: string; icon: LucideIcon }[] = [
@@ -55,7 +56,7 @@ const HISTORY_DAYS = 14;
  * an appointment updates the schedule, customer history and day totals together.
  */
 export function SalonApp() {
-  const { book, actions } = useSalonDemo();
+  const { book, actions, changed } = useSalonDemo();
   const [section, setSection] = useState<Section>('schedule');
   const [date, setDate] = useState(book.today);
   const [openAppt, setOpenAppt] = useState<{ id: string; mode: AppointmentMode } | null>(null);
@@ -92,13 +93,14 @@ export function SalonApp() {
       bump();
     },
   };
-  const reset = () => {
+  const resetNow = () => {
     actions.reset();
     setOpenAppt(null);
     setProfileFor(null);
     setDate(book.today);
     notify('Sample data restored.');
   };
+  const { reset, resetDialog } = useResetDemo(changed, resetNow);
   const editing = form?.mode === 'edit' ? book.customers.find((c) => c.id === form.id) : undefined;
   const heading = (title: string, action?: ReactNode) => <PageHeading title={title} book={book} onReset={reset} action={action} />;
   const bookButton = (
@@ -247,6 +249,7 @@ export function SalonApp() {
           }}
         />
       ) : null}
+      {resetDialog}
       <ToastRegion toast={toast} />
     </div>
   );

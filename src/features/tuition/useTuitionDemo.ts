@@ -24,6 +24,8 @@ import {
  */
 export function useTuitionDemo() {
   const [book, setBook] = useState<TuitionBook>(() => createTuitionSample());
+  // The data as last loaded or reset; anything else means the visitor has changed something.
+  const [baseline, setBaseline] = useState<TuitionBook>(book);
 
   const actions = useMemo(() => {
     function commit<R extends { ok: true; book: TuitionBook } | { ok: false }>(result: R): R {
@@ -42,9 +44,13 @@ export function useTuitionDemo() {
       unenrol: (enrolmentId: string) => commit(unenrol(book, enrolmentId)),
       createBatch: (input: BatchInput) => commit(createBatch(book, input)),
       updateBatch: (id: string, input: BatchInput) => commit(updateBatch(book, id, input)),
-      reset: () => setBook(createTuitionSample()),
+      reset: () => {
+        const fresh = createTuitionSample();
+        setBaseline(fresh);
+        setBook(fresh);
+      },
     };
   }, [book]);
 
-  return { book, actions };
+  return { book, actions, changed: book !== baseline };
 }

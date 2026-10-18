@@ -1,4 +1,4 @@
-import { useMemo, useReducer, useRef } from 'react';
+import { useMemo, useReducer, useRef, useState } from 'react';
 import { createSampleState, sampleBusiness } from '../../data/waterSample';
 import { waterReducer, summarize, type NewOrderInput } from './waterLogic';
 import { useToast } from '../../components/Toast';
@@ -9,6 +9,8 @@ import { useToast } from '../../components/Toast';
  */
 export function useWaterDemo() {
   const [state, dispatch] = useReducer(waterReducer, undefined, createSampleState);
+  // The data as last loaded or reset; anything else means the visitor has changed something.
+  const [baseline, setBaseline] = useState(state);
   const { toast, notify } = useToast(4500);
   const nextSeq = useRef(state.nextOrderSeq);
   nextSeq.current = state.nextOrderSeq;
@@ -43,14 +45,16 @@ export function useWaterDemo() {
         return number;
       },
       reset() {
-        dispatch({ type: 'reset', state: createSampleState() });
+        const fresh = createSampleState();
+        setBaseline(fresh);
+        dispatch({ type: 'reset', state: fresh });
         notify('Sample data restored.');
       },
     }),
     [notify],
   );
 
-  return { state, summary, actions, toast };
+  return { state, summary, actions, toast, changed: state !== baseline };
 }
 
 export type WaterDemoApi = ReturnType<typeof useWaterDemo>;

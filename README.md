@@ -144,6 +144,17 @@ The **Solutions** page (main nav and footer; the URL stays `/products`) is a sea
   - The form validates the request, then tells the visitor plainly that nothing was sent or stored, and offers a copy to keep.
   - `submitSolutionRequest` returns `not_connected`. Replace it when a real enquiry service exists; the form does not need to change.
 
+## Demo first run
+
+Every demo at `/products/:slug/try` opens straight onto its real app. A compact strip under the demo header (`src/features/demo/DemoGuide.tsx`) shows:
+- one sentence on what you can do in that demo;
+- the data note: fictional sample data, changes last until you reload or choose Reset demo, nothing is saved or sent (true for every demo: all state is in memory, nothing uses browser storage);
+- **Try first**: one suggested action. **Show me** scrolls to and focuses that real control on the first screen; it never clicks it or changes data. The suggestion can be hidden; the data note can't.
+
+The wording and each suggestion's target live in `src/features/demo/demoGuides.ts`. A target is found by the control's existing accessible label (for example the first visible "Mark TW-… delivered" button), and the browser tests check that every one resolves to an enabled control.
+
+**Reset demo** asks first when you've changed something (`useResetDemo`), and resets straight away when you haven't. Each demo's hook reports `changed` by comparing its data with the sample last loaded. The reset is the demo's own, which rebuilds the whole sample, so records, balances, ledgers and figures always come back together.
+
 ## Solution pages (`/products/:slug`)
 
 `src/pages/ProductDetailPage.tsx` renders every solution from its registry entry; nothing is written per page.

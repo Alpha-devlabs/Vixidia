@@ -13,6 +13,7 @@ import { Button } from '../../components/Button';
 import { ToastRegion } from '../../components/Toast';
 import { formatLongDay } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useResetDemo } from '../demo/useResetDemo';
 
 type View = 'today' | 'orders' | 'customers';
 
@@ -27,7 +28,7 @@ const views: { id: View; label: string; icon: LucideIcon }[] = [
  * demo). All state is local to this component tree.
  */
 export function WaterApp() {
-  const { state, summary, actions, toast } = useWaterDemo();
+  const { state, summary, actions, toast, changed } = useWaterDemo();
   const [view, setView] = useState<View>('today');
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<OrderFilter>('all');
@@ -52,11 +53,22 @@ export function WaterApp() {
     setFilter(f);
   };
 
+  // Reset restores the sample data and the starting view: today's run, no search or filter, nothing open.
+  const resetNow = () => {
+    actions.reset();
+    setView('today');
+    setQuery('');
+    setFilter('all');
+    setOpenOrderId(null);
+    setAddOpen(false);
+  };
+  const { reset, resetDialog } = useResetDemo(changed, resetNow);
+
   const quickActions: { label: string; icon: LucideIcon; onClick: () => void }[] = [
     { label: 'New order', icon: Plus, onClick: () => openAdd() },
     { label: 'Show deliveries left', icon: Clock, onClick: () => showFilter('pending') },
     { label: 'Show unpaid orders', icon: Wallet, onClick: () => showFilter('unpaid') },
-    { label: 'Reset sample data', icon: RotateCcw, onClick: actions.reset },
+    { label: 'Reset sample data', icon: RotateCcw, onClick: reset },
   ];
 
   return (
@@ -105,7 +117,7 @@ export function WaterApp() {
               <p className="mt-1 text-sm text-fg-muted">{formatLongDay(sampleBusiness.today)} · sample day</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" size="sm" onClick={actions.reset}>
+              <Button variant="secondary" size="sm" onClick={reset}>
                 <RotateCcw size={16} aria-hidden="true" /> Reset demo
               </Button>
               <Button size="sm" onClick={() => openAdd()}>
@@ -173,6 +185,7 @@ export function WaterApp() {
 
       <OrderDetailDialog state={state} orderId={openOrderId} onClose={() => setOpenOrderId(null)} actions={actions} />
       <AddOrderDialog open={addOpen} onClose={() => setAddOpen(false)} customers={state.customers} onAdd={actions.addOrder} presetCustomerId={presetCustomer} />
+      {resetDialog}
       <ToastRegion toast={toast} />
     </div>
   );

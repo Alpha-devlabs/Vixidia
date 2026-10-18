@@ -73,6 +73,7 @@ import { Panel } from '../../components/Panel';
 import { ToastRegion, useToast } from '../../components/Toast';
 import { pluralize } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useResetDemo } from '../demo/useResetDemo';
 
 type Section = 'dashboard' | 'products' | 'suppliers' | 'purchases' | 'customers' | 'orders' | 'payments';
 const nav: { name: Section; label: string; icon: LucideIcon }[] = [
@@ -94,7 +95,7 @@ type Pending = { kind: DocKind; id: string; step: 'receive' | 'confirm' | 'fulfi
  * adjusting and paying update stock, balances and the dashboard together.
  */
 export function DistributorApp() {
-  const { book, actions } = useDistributorDemo();
+  const { book, actions, changed } = useDistributorDemo();
   const [section, setSection] = useState<Section>('dashboard');
   const [productFor, setProductFor] = useState<string | null>(null);
   const [partyFor, setPartyFor] = useState<{ kind: PartyKind; id: string } | null>(null);
@@ -162,11 +163,12 @@ export function DistributorApp() {
       bump();
     },
   };
-  const reset = () => {
+  const resetNow = () => {
     actions.reset();
     closeDrawers();
     notify('Sample data restored.');
   };
+  const { reset, resetDialog } = useResetDemo(changed, resetNow);
   const heading = (title: string, action?: ReactNode) => <PageHeading title={title} book={book} onReset={reset} action={action} />;
   const newBtn = (label: string, onClick: () => void, Icon: LucideIcon = Plus) => (
     <Button onClick={onClick}>
@@ -372,6 +374,7 @@ export function DistributorApp() {
         />
       ) : null}
       {pending ? <PendingDialog key={`pe${session}`} book={book} pending={pending} onClose={() => setPending(null)} actions={actions} notify={notify} onOpenDoc={open.doc} /> : null}
+      {resetDialog}
       <ToastRegion toast={toast} />
     </div>
   );

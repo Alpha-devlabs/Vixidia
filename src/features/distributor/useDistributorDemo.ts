@@ -33,6 +33,8 @@ import {
  */
 export function useDistributorDemo() {
   const [book, setBook] = useState<DistributorBook>(() => createDistributorSample());
+  // The data as last loaded or reset; anything else means the visitor has changed something.
+  const [baseline, setBaseline] = useState<DistributorBook>(book);
 
   const actions = useMemo(() => {
     function commit<R extends { ok: true; book: DistributorBook } | { ok: false }>(result: R): R {
@@ -55,9 +57,13 @@ export function useDistributorDemo() {
       fulfilOrder: (id: string) => commit(fulfilOrder(book, id)),
       cancelOrder: (id: string) => commit(cancelOrder(book, id)),
       pay: (input: PaymentInput) => commit(recordPayment(book, input)),
-      reset: () => setBook(createDistributorSample()),
+      reset: () => {
+        const fresh = createDistributorSample();
+        setBaseline(fresh);
+        setBook(fresh);
+      },
     };
   }, [book]);
 
-  return { book, actions };
+  return { book, actions, changed: book !== baseline };
 }

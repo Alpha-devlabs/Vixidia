@@ -11,6 +11,8 @@ import { createInvoice, invoiceRows, markSent, overview, recordPayment, type New
  */
 export function useInvoiceDemo() {
   const [book, setBook] = useState<InvoiceBook>(() => createInvoiceSample());
+  // The data as last loaded or reset; anything else means the visitor has changed something.
+  const [baseline, setBaseline] = useState<InvoiceBook>(book);
   // Keep the first "today" so a reset restores exactly the data first shown.
   const [initialToday] = useState(book.today);
 
@@ -28,9 +30,13 @@ export function useInvoiceDemo() {
       create: (input: NewInvoiceInput) => commit(createInvoice(book, input)),
       recordPayment: (input: PaymentInput) => commit(recordPayment(book, input)),
       markSent: (invoiceId: string) => commit(markSent(book, invoiceId)),
-      reset: () => setBook(createInvoiceSample(initialToday)),
+      reset: () => {
+        const fresh = createInvoiceSample(initialToday);
+        setBaseline(fresh);
+        setBook(fresh);
+      },
     };
   }, [book, initialToday]);
 
-  return { book, rows, summary, actions };
+  return { book, rows, summary, actions, changed: book !== baseline };
 }

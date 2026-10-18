@@ -19,6 +19,8 @@ import { DistributorApp } from '../features/distributor/DistributorApp';
 import { brand } from '../config/brand';
 import { paths } from '../config/routes';
 import { getProductBySlug, productPath } from '../utils/products';
+import { DemoGuide } from '../features/demo/DemoGuide';
+import { demoGuides } from '../features/demo/demoGuides';
 import type { DemoId, Product } from '../types/product';
 
 /** Demo components keyed by demo id. Add an entry here when a new demo is built. */
@@ -71,12 +73,10 @@ const shellCopy = {
   interactive: {
     badge: 'Interactive demo · Sample data',
     short: 'Demo · Sample data',
-    note: 'A fictional business. Changes stay in this tab and are cleared when you reload — nothing is saved or sent anywhere.',
   },
   'design-preview': {
     badge: 'Design preview · Sample data',
     short: 'Preview',
-    note: 'A fictional business. These screens show the planned design; forms are checked but nothing is saved or sent anywhere.',
   },
 } as const;
 
@@ -114,9 +114,7 @@ function DemoShell({ product, children }: { product: Product; children: ReactNod
         </div>
       </header>
       <main id="main">
-        <p className="border-b border-line bg-surface px-4 py-2 text-center text-xs text-fg-muted sm:text-sm">
-          {copy.note}
-        </p>
+        {product.demo ? <DemoGuide guide={demoGuides[product.demo.id]} kind={product.demo.kind} /> : null}
         {children}
       </main>
     </div>

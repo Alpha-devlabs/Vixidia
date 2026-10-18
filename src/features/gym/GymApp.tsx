@@ -55,6 +55,7 @@ import { ToastRegion, useToast } from '../../components/Toast';
 import { addDays } from '../../utils/dates';
 import { formatLongDay, pluralize } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useResetDemo } from '../demo/useResetDemo';
 
 type Section = 'dashboard' | 'members' | 'attendance' | 'payments';
 const nav: { name: Section; label: string; icon: LucideIcon }[] = [
@@ -70,7 +71,7 @@ const nav: { name: Section; label: string; icon: LucideIcon }[] = [
  * recording a payment updates statuses, balances and the dashboard together.
  */
 export function GymApp() {
-  const { book, actions } = useGymDemo();
+  const { book, actions, changed } = useGymDemo();
   const [section, setSection] = useState<Section>('dashboard');
   const [profileFor, setProfileFor] = useState<string | null>(null);
   const [form, setForm] = useState<{ mode: 'register' } | { mode: 'edit'; id: string } | null>(null);
@@ -113,11 +114,12 @@ export function GymApp() {
       bump();
     },
   };
-  const reset = () => {
+  const resetNow = () => {
     actions.reset();
     setProfileFor(null);
     notify('Sample data restored.');
   };
+  const { reset, resetDialog } = useResetDemo(changed, resetNow);
   const editing = form?.mode === 'edit' ? book.members.find((m) => m.id === form.id) : undefined;
   const views: Record<Section, ReactNode> = {
     dashboard: <DashboardView book={book} onOpen={setProfileFor} onRegister={open.register} onRenew={open.renew} onPay={() => open.pay()} onAttendance={() => setSection('attendance')} onReset={reset} />,
@@ -253,6 +255,7 @@ export function GymApp() {
           }}
         />
       ) : null}
+      {resetDialog}
       <ToastRegion toast={toast} />
     </div>
   );

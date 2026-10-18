@@ -12,6 +12,8 @@ import { bookAppointment, cancelAppointment, completeAppointment, createCustomer
  */
 export function useSalonDemo() {
   const [book, setBook] = useState<SalonBook>(() => createSalonSample());
+  // The data as last loaded or reset; anything else means the visitor has changed something.
+  const [baseline, setBaseline] = useState<SalonBook>(book);
 
   const actions = useMemo(() => {
     function commit<R extends { ok: true; book: SalonBook } | { ok: false }>(result: R): R {
@@ -27,9 +29,13 @@ export function useSalonDemo() {
       pay: (id: string, method: string) => commit(recordPayment(book, id, method)),
       createCustomer: (input: CustomerInput) => commit(createCustomer(book, input)),
       updateCustomer: (id: string, input: CustomerInput) => commit(updateCustomer(book, id, input)),
-      reset: () => setBook(createSalonSample()),
+      reset: () => {
+        const fresh = createSalonSample();
+        setBaseline(fresh);
+        setBook(fresh);
+      },
     };
   }, [book]);
 
-  return { book, actions };
+  return { book, actions, changed: book !== baseline };
 }

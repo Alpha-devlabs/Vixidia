@@ -11,6 +11,8 @@ import { createTask, setCompleted, taskRows, taskSummary, updateTask, type TaskI
  */
 export function useTasksDemo() {
   const [book, setBook] = useState<TaskBook>(() => createTasksSample());
+  // The data as last loaded or reset; anything else means the visitor has changed something.
+  const [baseline, setBaseline] = useState<TaskBook>(book);
   // Keep the first "today" so a reset restores exactly the data first shown.
   const [initialToday] = useState(book.today);
 
@@ -27,9 +29,13 @@ export function useTasksDemo() {
       create: (input: TaskInput) => commit(createTask(book, input)),
       update: (id: string, input: TaskInput) => commit(updateTask(book, id, input)),
       setCompleted: (id: string, completed: boolean) => commit(setCompleted(book, id, completed)),
-      reset: () => setBook(createTasksSample(initialToday)),
+      reset: () => {
+        const fresh = createTasksSample(initialToday);
+        setBaseline(fresh);
+        setBook(fresh);
+      },
     };
   }, [book, initialToday]);
 
-  return { book, rows, summary, actions };
+  return { book, rows, summary, actions, changed: book !== baseline };
 }

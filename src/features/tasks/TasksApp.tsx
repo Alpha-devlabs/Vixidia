@@ -28,6 +28,7 @@ import { controlClass } from '../../components/forms';
 import { ToastRegion, useToast } from '../../components/Toast';
 import { formatLongDay, pluralize } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useResetDemo } from '../demo/useResetDemo';
 
 type Section = 'overview' | 'tasks' | 'follow_ups';
 type View = { name: Section } | { name: 'new'; from: Section } | { name: 'edit'; id: string; from: Section };
@@ -44,7 +45,7 @@ const nav: { name: Section; label: string; icon: LucideIcon }[] = [
  * overview together. Follow-ups are tasks in the Follow-up category.
  */
 export function TasksApp() {
-  const { book, rows, summary, actions } = useTasksDemo();
+  const { book, rows, summary, actions, changed } = useTasksDemo();
   const [view, setView] = useState<View>({ name: 'overview' });
   const [filters, setFilters] = useState<TaskFilters>(noFilters);
   const [sort, setSort] = useState<TaskSort>('due');
@@ -66,12 +67,13 @@ export function TasksApp() {
     const result = actions.setCompleted(id, completed);
     if (result.ok) notify(completed ? `Completed: ${result.task.title}` : `Reopened: ${result.task.title}`);
   };
-  const reset = () => {
+  const resetNow = () => {
     actions.reset();
     setDetailFor(null);
     setView({ name: section });
     notify('Sample data restored.');
   };
+  const { reset, resetDialog } = useResetDemo(changed, resetNow);
   const detailRow = rows.find((r) => r.task.id === detailFor);
   const editing = view.name === 'edit' ? book.tasks.find((t) => t.id === view.id) : undefined;
   const backTo = (s: Section) => setView({ name: s });
@@ -199,6 +201,7 @@ export function TasksApp() {
         }}
         onToggle={(completed) => detailRow && toggle(detailRow.task.id, completed)}
       />
+      {resetDialog}
       <ToastRegion toast={toast} />
     </div>
   );

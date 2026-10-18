@@ -19,6 +19,8 @@ export function usePulseDemo() {
     initialToday.current = s.today;
     return s;
   });
+  // The data as last loaded or reset; anything else means the visitor has changed something.
+  const [baseline, setBaseline] = useState(state);
   const [toast, setToast] = useState<Toast | null>(null);
   const toastSeq = useRef(0);
 
@@ -41,12 +43,14 @@ export function usePulseDemo() {
       },
       reset() {
         // Keep the same "today" so the restored dataset matches the one first shown.
-        dispatch({ type: 'reset', state: createSampleState(initialToday.current ?? undefined) });
+        const fresh = createSampleState(initialToday.current ?? undefined);
+        setBaseline(fresh);
+        dispatch({ type: 'reset', state: fresh });
         notify('Sample data restored.');
       },
     }),
     [notify],
   );
 
-  return { state, actions, toast };
+  return { state, actions, toast, changed: state !== baseline };
 }

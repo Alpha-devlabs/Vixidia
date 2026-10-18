@@ -15,6 +15,7 @@ import { controlClass } from '../../components/forms';
 import { ToastRegion, useToast } from '../../components/Toast';
 import { formatAmount, formatCurrency, pluralize } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useResetDemo } from '../demo/useResetDemo';
 
 type ListView = 'overview' | 'invoices';
 type View = { name: ListView } | { name: 'new' } | { name: 'detail'; id: string; from: ListView };
@@ -29,7 +30,7 @@ const nav: { name: ListView; label: string; icon: LucideIcon }[] = [
  * in-memory book (useInvoiceDemo), so totals, balances and statuses always agree.
  */
 export function InvoiceTracker() {
-  const { book, rows, summary, actions } = useInvoiceDemo();
+  const { book, rows, summary, actions, changed } = useInvoiceDemo();
   const [view, setView] = useState<View>({ name: 'overview' });
   const [paymentFor, setPaymentFor] = useState<string | null>(null);
   // A fresh drawer for every opening, so it never shows the previous entry, even for a frame.
@@ -48,12 +49,13 @@ export function InvoiceTracker() {
   const activeNav = view.name === 'detail' ? view.from : view.name === 'new' ? null : view.name;
   const detailRow = view.name === 'detail' ? rows.find((r) => r.invoice.id === view.id) : undefined;
   const nextNumber = nextInvoiceNumber(book.invoices, book.today);
-  const reset = () => {
+  const resetNow = () => {
     actions.reset();
     setPaymentFor(null);
     setView({ name: view.name === 'invoices' ? 'invoices' : 'overview' });
     notify('Sample data restored.');
   };
+  const { reset, resetDialog } = useResetDemo(changed, resetNow);
 
   return (
     <div className="flex min-h-[calc(100dvh-3.5rem)] flex-col lg:flex-row">
@@ -150,6 +152,7 @@ export function InvoiceTracker() {
           return result;
         }}
       />
+      {resetDialog}
       <ToastRegion toast={toast} />
     </div>
   );

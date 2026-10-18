@@ -12,6 +12,8 @@ import { checkIn, checkOut, decideLeave, submitLeave, type LeaveInput } from './
  */
 export function useLeaveDemo() {
   const [book, setBook] = useState<LeaveBook>(() => createLeaveSample());
+  // The data as last loaded or reset; anything else means the visitor has changed something.
+  const [baseline, setBaseline] = useState<LeaveBook>(book);
   // Keep the first date so a reset restores exactly the data first shown.
   const [initialToday] = useState(book.today);
 
@@ -26,9 +28,13 @@ export function useLeaveDemo() {
       checkOut: (employeeId: string, time: string) => commit(checkOut(book, employeeId, time)),
       submitLeave: (input: LeaveInput) => commit(submitLeave(book, input)),
       decideLeave: (id: string, decision: 'approved' | 'rejected') => commit(decideLeave(book, id, decision)),
-      reset: () => setBook(createLeaveSample(initialToday)),
+      reset: () => {
+        const fresh = createLeaveSample(initialToday);
+        setBaseline(fresh);
+        setBook(fresh);
+      },
     };
   }, [book, initialToday]);
 
-  return { book, actions };
+  return { book, actions, changed: book !== baseline };
 }

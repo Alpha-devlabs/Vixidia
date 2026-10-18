@@ -24,6 +24,7 @@ import { sampleBusiness } from '../../data/pulseSample';
 import { Button } from '../../components/Button';
 import { formatDayRange, formatLongDay } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useResetDemo } from '../demo/useResetDemo';
 
 const sections: { id: string; label: string; icon: LucideIcon }[] = [
   { id: 'pulse-overview', label: 'Overview', icon: Gauge },
@@ -37,7 +38,7 @@ const DEFAULT_DAYS: PeriodDays = 30;
 
 /** The Business Analytics sample-data dashboard (internal name: Pulse). All state is local to this component tree. */
 export function PulseDemo() {
-  const { state, actions, toast } = usePulseDemo();
+  const { state, actions, toast, changed } = usePulseDemo();
   const [days, setDays] = useState<PeriodDays>(DEFAULT_DAYS);
   const [metric, setMetric] = useState<TrendMetric>('revenue');
   const [by, setBy] = useState<BreakdownBy>('category');
@@ -51,12 +52,13 @@ export function PulseDemo() {
   const progress = useMemo(() => targetProgress(state, days), [state, days]);
   const activity = useMemo(() => activityFeed(state, 8), [state]);
 
-  const reset = () => {
+  const resetNow = () => {
     setDays(DEFAULT_DAYS);
     setMetric('revenue');
     setBy('category');
     actions.reset();
   };
+  const { reset, resetDialog } = useResetDemo(changed, resetNow);
 
   return (
     <div className="flex min-h-[calc(100dvh-3.5rem)] flex-col lg:flex-row">
@@ -168,6 +170,7 @@ export function PulseDemo() {
         </div>
       </div>
 
+      {resetDialog}
       <div aria-live="polite" role="status" className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4">
         {toast ? (
           <p key={toast.id} className="animate-pop rounded-[var(--radius-control)] bg-fg px-4 py-3 text-sm font-medium text-canvas shadow-[var(--shadow-lift)]">

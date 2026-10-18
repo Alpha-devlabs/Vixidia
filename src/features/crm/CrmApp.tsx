@@ -25,6 +25,7 @@ import { controlClass } from '../../components/forms';
 import { ToastRegion, useToast } from '../../components/Toast';
 import { pluralize } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useResetDemo } from '../demo/useResetDemo';
 
 type ListView = 'overview' | 'customers';
 type View = { name: ListView } | { name: 'new' } | { name: 'profile'; id: string; from: ListView } | { name: 'edit'; id: string; from: ListView };
@@ -39,7 +40,7 @@ const nav: { name: ListView; label: string; icon: LucideIcon }[] = [
  * book (useCrmDemo), so the directory, profile and overview always agree.
  */
 export function CrmApp() {
-  const { book, rows, summary, actions } = useCrmDemo();
+  const { book, rows, summary, actions, changed } = useCrmDemo();
   const [view, setView] = useState<View>({ name: 'overview' });
   const [logFor, setLogFor] = useState<string | null>(null);
   // A fresh drawer for every opening, so it never shows the previous entry.
@@ -58,12 +59,13 @@ export function CrmApp() {
     setLogFor(id);
     setLogSession((n) => n + 1);
   };
-  const reset = () => {
+  const resetNow = () => {
     actions.reset();
     setLogFor(null);
     setView({ name: view.name === 'customers' ? 'customers' : 'overview' });
     notify('Sample data restored.');
   };
+  const { reset, resetDialog } = useResetDemo(changed, resetNow);
 
   return (
     <div className="flex min-h-[calc(100dvh-3.5rem)] flex-col lg:flex-row">
@@ -179,6 +181,7 @@ export function CrmApp() {
           return result;
         }}
       />
+      {resetDialog}
       <ToastRegion toast={toast} />
     </div>
   );

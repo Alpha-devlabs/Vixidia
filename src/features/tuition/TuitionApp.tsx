@@ -81,6 +81,7 @@ import { ToastRegion, useToast } from '../../components/Toast';
 import { addDays } from '../../utils/dates';
 import { formatLongDay, pluralize } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useResetDemo } from '../demo/useResetDemo';
 
 type Section = 'dashboard' | 'students' | 'batches' | 'attendance' | 'fees';
 const nav: { name: Section; label: string; icon: LucideIcon }[] = [
@@ -97,7 +98,7 @@ const nav: { name: Section; label: string; icon: LucideIcon }[] = [
  * payments update the dashboard, profiles and lists together.
  */
 export function TuitionApp() {
-  const { book, actions } = useTuitionDemo();
+  const { book, actions, changed } = useTuitionDemo();
   const [section, setSection] = useState<Section>('dashboard');
   const [attendanceFor, setAttendanceFor] = useState<{ batchId: string; date: string }>({ batchId: 'b1', date: book.today });
   const [studentFor, setStudentFor] = useState<string | null>(null);
@@ -153,11 +154,12 @@ export function TuitionApp() {
       setSection('attendance');
     },
   };
-  const reset = () => {
+  const resetNow = () => {
     actions.reset();
     closeAll();
     notify('Sample data restored.');
   };
+  const { reset, resetDialog } = useResetDemo(changed, resetNow);
   const unenrol = (enrolmentId: string) => {
     const e = book.enrolments.find((x) => x.id === enrolmentId);
     const r = actions.unenrol(enrolmentId);
@@ -372,6 +374,7 @@ export function TuitionApp() {
           }}
         />
       ) : null}
+      {resetDialog}
       <ToastRegion toast={toast} />
     </div>
   );

@@ -12,6 +12,8 @@ import { checkIn, recordPayment, registerMember, renewMembership, updateMember, 
  */
 export function useGymDemo() {
   const [book, setBook] = useState<GymBook>(() => createGymSample());
+  // The data as last loaded or reset; anything else means the visitor has changed something.
+  const [baseline, setBaseline] = useState<GymBook>(book);
 
   const actions = useMemo(() => {
     function commit<R extends { ok: true; book: GymBook } | { ok: false }>(result: R): R {
@@ -25,9 +27,13 @@ export function useGymDemo() {
       renew: (memberId: string, input: RenewInput) => commit(renewMembership(book, memberId, input)),
       checkIn: (memberId: string, time: string) => commit(checkIn(book, memberId, time)),
       pay: (input: { memberId: string; amount: string; method: string }) => commit(recordPayment(book, input)),
-      reset: () => setBook(createGymSample()),
+      reset: () => {
+        const fresh = createGymSample();
+        setBaseline(fresh);
+        setBook(fresh);
+      },
     };
   }, [book]);
 
-  return { book, actions };
+  return { book, actions, changed: book !== baseline };
 }
