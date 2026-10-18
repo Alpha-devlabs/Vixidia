@@ -39,6 +39,12 @@ export interface Product {
   benefits: string[];
   /** Capabilities that exist today (in the demo or product), or planned ones for `planned` products. */
   features: string[];
+  /**
+   * How it works: the main workflow in three or four short steps, in the order a
+   * visitor would do them in the demo (or, for planned products, as planned).
+   * Shown on the detail page; describe only what exists.
+   */
+  steps: string[];
   /** Ideas that are not built yet. Only shown as future concepts. */
   futureFeatures?: string[];
   /** Present only when a browser demo with sample data exists. */

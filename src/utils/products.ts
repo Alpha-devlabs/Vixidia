@@ -70,3 +70,45 @@ export function productActions(product: Product): { primary: ProductAction; seco
   }
   return { primary: { label: 'View concept', to: productPath(product) } };
 }
+
+export interface DetailState {
+  /** What the visitor can do right now, if anything. Only real destinations. */
+  primary?: ProductAction & { kind: 'app' | 'demo' | 'preview' };
+  /** Short availability line shown next to the call to action. */
+  note: string;
+  /** Heading and text for the availability panel. */
+  availability: { title: string; text: string };
+}
+
+/**
+ * The detail page's call to action and availability wording, derived only from
+ * the registry: a live app, a working demo, a design preview, or nothing yet.
+ * Demo links always use the registry slug via demoPath, never a display name.
+ */
+export function detailState(product: Product): DetailState {
+  if (product.status === 'live' && product.appUrl) {
+    return {
+      primary: { kind: 'app', label: `Open ${product.name}`, to: product.appUrl },
+      note: 'Released and ready to use.',
+      availability: { title: 'Available', text: statusInfo.live.explanation },
+    };
+  }
+  if (hasDemo(product) && product.demo.kind === 'interactive') {
+    return {
+      primary: { kind: 'demo', label: 'Try live demo', to: demoPath(product) },
+      note: 'Opens right away with a fictional sample business. No sign-up.',
+      availability: { title: 'In development, with a working demo', text: statusInfo[product.status].explanation },
+    };
+  }
+  if (hasDemo(product)) {
+    return {
+      primary: { kind: 'preview', label: 'See the design preview', to: demoPath(product) },
+      note: 'Screens with sample data. Saving and payments aren’t built yet.',
+      availability: { title: 'Design preview only', text: 'The screens can be explored with fictional sample data, but the logic behind them is not built yet, so nothing you enter is saved.' },
+    };
+  }
+  return {
+    note: 'There is no demo yet.',
+    availability: { title: 'Demo not available yet', text: `${statusInfo[product.status].explanation} There is nothing to try yet; hearing from people who would use it helps us decide what to build.` },
+  };
+}

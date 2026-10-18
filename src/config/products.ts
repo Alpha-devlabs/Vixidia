@@ -41,6 +41,12 @@ export const products: readonly Product[] = [
       'Recent activity and notable changes, such as milestones and new customers',
       'Rule-based insights that point out what has changed and what needs attention',
     ],
+    steps: [
+      'Pick a period: the last 7, 30 or 90 days.',
+      'Read the four headline figures, each compared with the previous period of the same length.',
+      'Switch the trend chart between revenue, orders and average order value, and break sales down by category or product.',
+      'Set a revenue target and follow progress, insights and recent activity.',
+    ],
     futureFeatures: [
       'Connecting your own sales records, starting with spreadsheet import',
       'Weekly performance summaries',
@@ -76,6 +82,12 @@ export const products: readonly Product[] = [
       'Follow-ups that can link to a customer',
       'Marking tasks complete and reopening them',
     ],
+    steps: [
+      'Start from the overview of what’s due today, upcoming and overdue.',
+      'Add a task or follow-up with a due date, priority and category, optionally linked to a customer.',
+      'Search, filter and sort the list to decide what to do next.',
+      'Mark tasks complete, or reopen them if something comes back.',
+    ],
     futureFeatures: ['Reminders before a task is due', 'Assigning tasks to teammates', 'Repeating tasks'],
     demo: { id: 'tasks', label: 'Try the demo', kind: 'interactive' },
     searchKeywords: ['tasks', 'to-do', 'todo', 'to do list', 'follow-up', 'followup', 'follow up', 'deadlines', 'due dates', 'checklist', 'productivity', 'work planning', 'call back customers'],
@@ -107,6 +119,12 @@ export const products: readonly Product[] = [
       'Adding and editing customers, with checks on email and phone numbers',
       'An overview of prospects, active customers and who hasn’t been contacted in 30 days',
     ],
+    steps: [
+      'Search the customer directory or filter it by status.',
+      'Open a profile to see contact details, tags, notes and the full interaction history.',
+      'Log a call, meeting, email, message or note against the customer.',
+      'Add or edit customers; the overview shows who hasn’t been contacted in 30 days.',
+    ],
     futureFeatures: ['Importing customers from a spreadsheet', 'Shared access for a small team'],
     demo: { id: 'crm', label: 'Try the demo', kind: 'interactive' },
     searchKeywords: ['customers', 'clients', 'contacts', 'crm', 'customer relationship', 'leads', 'prospects', 'customer history', 'interactions', 'client list', 'customer database'],
@@ -124,11 +142,11 @@ export const products: readonly Product[] = [
     problem:
       'Invoices go out by message or paper, payments arrive in different ways, and matching the two takes an evening every month.',
     description:
-      'Create invoices, follow each one through to payment, and record payments as they arrive. A running balance for every customer shows who owes what, and overdue invoices are easy to spot.',
+      'Create invoices, follow each one through to payment, and record payments as they arrive. Every invoice shows what is still unpaid, and overdue invoices are easy to spot.',
     audience: ['Freelancers', 'Small agencies', 'Wholesale and supply businesses'],
     benefits: [
       'One list of every unpaid invoice',
-      'Running balance for each customer',
+      'The balance left on every invoice, updated with each payment',
       'Fewer evenings spent reconciling',
     ],
     features: [
@@ -137,6 +155,12 @@ export const products: readonly Product[] = [
       'Recording full and part payments, with every payment kept',
       'Overdue invoices and unpaid balances by age',
       'Searching and filtering invoices by status',
+    ],
+    steps: [
+      'Create an invoice with GST, and send it straight away or save it as a draft.',
+      'Follow each invoice’s due date and payment status.',
+      'Record full or part payments; every payment is kept against the invoice.',
+      'Check overdue invoices and unpaid balances by age.',
     ],
     futureFeatures: [
       'Customer balances and a customer list',
@@ -169,6 +193,12 @@ export const products: readonly Product[] = [
       'Leave requests with approval and rejection',
       'Employee profiles with recent attendance and leave',
     ],
+    steps: [
+      'See who is present, absent, on leave or not checked in today.',
+      'Check people in and out; late arrivals and missing check-outs are flagged.',
+      'Approve or reject leave requests.',
+      'Look back at any recent working day, or open a person’s profile for their attendance and leave.',
+    ],
     futureFeatures: ['A monthly summary per person', 'Leave balances', 'Public holiday calendars'],
     demo: { id: 'leave', label: 'Try the demo', kind: 'interactive' },
     searchKeywords: ['attendance', 'leave', 'leaves', 'time off', 'absence', 'check-in', 'check in', 'staff', 'employees', 'hr', 'human resources', 'workforce', 'team'],
@@ -200,6 +230,12 @@ export const products: readonly Product[] = [
       'Mark orders delivered and payments received',
       'Customer list with order history and balance',
       'Quick order entry for existing or new customers',
+    ],
+    steps: [
+      'Add an order for an existing customer, or a new one, from the quick order entry.',
+      'Follow the day’s summary of orders, deliveries and collections.',
+      'Mark orders delivered and payments received as the round goes on.',
+      'Open a customer to see their order history and balance.',
     ],
     futureFeatures: ['Tracking empty cans returned', 'Regular delivery schedules', 'Part payments'],
     demo: { id: 'water', label: 'Try the demo', kind: 'interactive' },
@@ -252,6 +288,12 @@ export const products: readonly Product[] = [
       'Renewals that extend from the expiry date if early, or from today if expired',
       'Daily check-in for members with a valid membership, once a day, with 14 days of history',
       'Membership payments with outstanding balances and payment history',
+    ],
+    steps: [
+      'Register a member on a monthly, quarterly, half-yearly or annual plan.',
+      'Check members in at the front desk; only valid memberships are let in, once a day.',
+      'Renew memberships: early renewals extend from the expiry date, late ones start today.',
+      'Record payments and follow outstanding balances from the dashboard.',
     ],
     futureFeatures: ['Renewal reminders to members', 'Freezing a membership', 'Trainer and class schedules'],
     demo: { id: 'gym', label: 'Try the demo', kind: 'interactive' },
@@ -307,6 +349,12 @@ export const products: readonly Product[] = [
       'Rescheduling and cancelling appointments',
       'A customer directory with visit history, last visit, usual service and notes',
       'Checkout that records full payment once, with unpaid appointments clearly marked',
+    ],
+    steps: [
+      'Book one or more services; the total time and price are worked out for you.',
+      'Assign a stylist and a free start time, within opening hours and without overlaps.',
+      'Reschedule or cancel appointments from the day’s schedule.',
+      'Check out completed appointments and record the payment once.',
     ],
     futureFeatures: ['Appointment reminders to customers', 'Online booking', 'Packages and memberships'],
     demo: { id: 'salon', label: 'Try the demo', kind: 'interactive' },
@@ -365,6 +413,12 @@ export const products: readonly Product[] = [
       'Monthly fee generation per student and batch that never creates duplicates',
       'Full and part payments by cash, UPI or card, with balances and overdue fees',
     ],
+    steps: [
+      'Set up batches with subject, grades, teacher, weekly schedule, room and monthly fee.',
+      'Add students with guardian details and enrol them in batches.',
+      'Take attendance for each class: present, late or absent.',
+      'Generate monthly fees and record full or part payments; overdue fees show up on the dashboard.',
+    ],
     futureFeatures: ['Fee reminders to parents', 'Exam marks and progress reports', 'Teacher payouts'],
     demo: { id: 'tuition', label: 'Try the demo', kind: 'interactive' },
     searchKeywords: [
@@ -420,6 +474,12 @@ export const products: readonly Product[] = [
       'Purchases from suppliers that add stock once, when received',
       'Sales orders that check stock when confirmed and deduct it once, when delivered',
       'Customer and supplier payments by cash, UPI or bank transfer, with part payments and overdue balances',
+    ],
+    steps: [
+      'Set up products with SKU, unit, cost and selling price, and a reorder level.',
+      'Receive purchases from suppliers to add stock once, when the goods arrive.',
+      'Take sales orders: confirming checks stock, delivering deducts it.',
+      'Record payments from customers and to suppliers, and follow what’s owed and overdue.',
     ],
     futureFeatures: ['Payment reminders to customers', 'Delivery routes and vehicles', 'Returns and credit notes'],
     demo: { id: 'distributor', label: 'Try the demo', kind: 'interactive' },

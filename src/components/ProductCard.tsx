@@ -1,10 +1,11 @@
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { ArrowRight } from 'lucide-react';
 import type { Product } from '../types/product';
 import { productActions, productPath } from '../utils/products';
 import { StatusBadge } from './StatusBadge';
 import { buttonClass } from './Button';
 import { cn } from '../utils/cn';
+import { originState } from '../utils/origin';
 
 /** Product card driven entirely by registry data. */
 export function ProductCard({ product, headingLevel = 'h3' }: { product: Product; headingLevel?: 'h2' | 'h3' }) {
@@ -12,6 +13,8 @@ export function ProductCard({ product, headingLevel = 'h3' }: { product: Product
   const Icon = product.icon;
   const Heading = headingLevel;
   const featured = product.demo !== undefined;
+  // Lets the solution page offer a way back to these exact results.
+  const state = originState(useLocation());
 
   return (
     <article
@@ -33,7 +36,7 @@ export function ProductCard({ product, headingLevel = 'h3' }: { product: Product
       </div>
 
       <Heading className="mt-5 text-xl font-semibold tracking-[-0.015em]">
-        <Link to={productPath(product)} className="hover:underline hover:decoration-accent hover:decoration-2 hover:underline-offset-4">
+        <Link to={productPath(product)} state={state} className="hover:underline hover:decoration-accent hover:decoration-2 hover:underline-offset-4">
           {product.name}
         </Link>
       </Heading>
@@ -43,6 +46,7 @@ export function ProductCard({ product, headingLevel = 'h3' }: { product: Product
       <div className="mt-6 flex flex-wrap items-center gap-2">
         <Link
           to={primary.to}
+          state={state}
           className={buttonClass(featured ? 'primary' : 'secondary', 'sm')}
           aria-label={`${primary.label}: ${product.name}`}
         >
@@ -52,6 +56,7 @@ export function ProductCard({ product, headingLevel = 'h3' }: { product: Product
         {secondary ? (
           <Link
             to={secondary.to}
+            state={state}
             className={buttonClass('subtle', 'sm')}
             aria-label={`${secondary.label}: ${product.name}`}
           >

@@ -144,6 +144,14 @@ The **Solutions** page (main nav and footer; the URL stays `/products`) is a sea
   - The form validates the request, then tells the visitor plainly that nothing was sent or stored, and offers a copy to keep.
   - `submitSolutionRequest` returns `not_connected`. Replace it when a real enquiry service exists; the form does not need to change.
 
+## Solution pages (`/products/:slug`)
+
+`src/pages/ProductDetailPage.tsx` renders every solution from its registry entry; nothing is written per page.
+- **First screen:** name, category and status, the one-line summary, who it's made for, and **Try live demo** (with "Browse other solutions"). The real demo preview sits beside it on wide screens and under it on narrow ones.
+- **Then:** the problem it helps solve, what you can manage in the demo (`features`), how it works (`steps`: three or four, describing only what exists), who it's for, and about the demo (shared limitations wording plus `futureFeatures` as "Not in the demo yet"). The call to action repeats once at the end.
+- **States** come from `detailState()` in `src/utils/products.ts`: a working demo (Try live demo), a design preview, a live app, or no demo yet (an honest "Demo not available yet" with a way back to available solutions). Demo links always come from the registry slug via `demoPath`, so `/products/pulse` and `/products/pulse/try` keep working.
+- **Back to results:** links from the homepage search, the finder and product cards carry the page they came from in router state (`src/utils/origin.ts`), not the URL. The solution page then shows "Back to results for “…”", and the demo's Back link passes it along. A shared link or a new tab falls back to the Solutions breadcrumb.
+
 ## Homepage search (`/`)
 
 The homepage leads with the same search as the finder (`src/features/solutions/HomeSolutionSearch.tsx`). It reads the one shared catalogue in `siteCatalog.ts` and ranks with `searchCatalog`, so the homepage and `/products` always agree.

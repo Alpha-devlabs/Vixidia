@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useLocation, useParams } from 'react-router';
 import { ArrowLeft, FlaskConical } from 'lucide-react';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { SiteFrame } from '../app/SiteLayout';
@@ -82,12 +82,15 @@ const shellCopy = {
 
 function DemoShell({ product, children }: { product: Product; children: ReactNode }) {
   const copy = shellCopy[product.demo?.kind ?? 'interactive'];
+  // Keep where the visitor came from, so the solution page can still offer a way back to their results.
+  const { state } = useLocation();
   return (
     <div className="min-h-dvh bg-canvas">
       <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-line bg-surface px-3 sm:px-5">
         <div className="flex min-w-0 items-center gap-2 sm:gap-4">
           <Link
             to={productPath(product)}
+            state={state}
             className="inline-flex min-h-10 items-center gap-1.5 rounded-[var(--radius-control)] px-2 text-sm font-medium text-fg-muted hover:bg-subtle hover:text-fg"
           >
             <ArrowLeft size={17} aria-hidden="true" />
