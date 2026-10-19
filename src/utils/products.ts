@@ -60,7 +60,7 @@ export interface ProductAction {
  * Only actions with a real destination are returned.
  */
 export function productActions(product: Product): { primary: ProductAction; secondary?: ProductAction } {
-  const details: ProductAction = { label: 'View details', to: productPath(product) };
+  const details: ProductAction = { label: 'View solution', to: productPath(product) };
   if (product.status === 'live' && product.appUrl) {
     return { primary: { label: `Open ${product.name}`, to: product.appUrl }, secondary: details };
   }

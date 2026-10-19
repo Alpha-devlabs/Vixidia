@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Lightbulb } from 'lucide-react';
 import { products } from '../../config/products';
 import { solutionIdeas, type SolutionIdea } from '../../config/solutionIdeas';
-import { buildCatalog, queryWords, searchCatalog, topMatches } from './catalog';
+import { buildCatalog, queryWords, searchCatalog, searchSolutions, topMatches } from './catalog';
 import { HOME_RESULT_LIMIT, exampleSearches, siteCatalog, withQuery } from './siteCatalog';
 import { SolutionResult } from './SolutionResult';
 
@@ -52,7 +52,7 @@ describe('homepage search', () => {
     expect(queryWords('')).toEqual([]);
     expect(queryWords('   ')).toEqual([]);
     expect(queryWords('software for my business management')).toEqual(['business']);
-    expect(top('florist')).toEqual({ shown: [], total: 0 });
+    expect(top('florist')).toEqual({ shown: [], total: 0, exact: true });
   });
 
   it('links to the finder with the same q parameter', () => {
@@ -64,6 +64,31 @@ describe('homepage search', () => {
   it('gives available solutions their existing detail and demo routes', () => {
     const gym = top('gym').shown[0]!;
     expect(gym).toMatchObject({ type: 'product', detailPath: '/products/gym-membership-management', demoPath: '/products/gym-membership-management/try' });
+  });
+});
+
+describe('everyday phrasing', () => {
+  const run = (q: string) => searchSolutions(siteCatalog, q);
+  it('finds the right solution when a visitor describes the problem in their own words', () => {
+    expect(run('keep track of customers who owe me money')).toMatchObject({ exact: true });
+    expect(run('keep track of customers who owe me money').entries[0]?.name).toBe('Invoice & Payment Tracker');
+    expect(run('manage gym members and renewals').entries.map((e) => e.name)).toEqual(['Gym Membership Management']);
+    expect(run('schedule beauty salon appointments').entries.map((e) => e.name)).toEqual(['Salon Management']);
+    expect(run('track student fees and attendance').entries.map((e) => e.name)).toEqual(['Tuition Centre Management']);
+    expect(run('manage wholesale stock and orders').entries.map((e) => e.name)).toEqual(['Small Distributor Management']);
+    expect(run('staff attendance and leave').entries[0]?.name).toBe('Leave & Attendance');
+  });
+
+  it('offers closest matches for a long query only when they match all but one word, and says so', () => {
+    const r = run('schedule salon appointments for my team');
+    expect(r.exact).toBe(false);
+    expect(r.entries.map((e) => e.name)).toEqual(['Salon Management']);
+  });
+
+  it('stays honest: unrelated or short queries get no results rather than forced ones', () => {
+    expect(run('restaurant table bookings')).toEqual({ entries: [], exact: true });
+    expect(run('gym invoices')).toEqual({ entries: [], exact: true });
+    expect(run('florist')).toEqual({ entries: [], exact: true });
   });
 });
 

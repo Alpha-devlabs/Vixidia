@@ -168,7 +168,7 @@ export const products: readonly Product[] = [
       'Sending invoices to customers',
     ],
     demo: { id: 'invoice-tracker', label: 'Try the invoice demo', kind: 'interactive' },
-    searchKeywords: ['invoices', 'invoicing', 'bills', 'billing', 'payments', 'receivables', 'outstanding', 'outstanding balances', 'customer balances', 'dues', 'overdue', 'unpaid', 'gst', 'collections', 'part payments', 'accounts'],
+    searchKeywords: ['invoices', 'invoicing', 'bills', 'billing', 'payments', 'receivables', 'outstanding', 'outstanding balances', 'customer balances', 'dues', 'overdue', 'unpaid', 'gst', 'collections', 'part payments', 'accounts', 'owe', 'owed', 'money owed'],
   },
   {
     id: 'leave',
@@ -258,6 +258,8 @@ export const products: readonly Product[] = [
       'outstanding balance',
       'dues',
       'unpaid',
+      'owe',
+      'money owed',
     ],
   },
   {
@@ -382,6 +384,8 @@ export const products: readonly Product[] = [
       'appointments',
       'bookings',
       'appointment booking',
+      'schedule',
+      'appointment schedule',
     ],
   },
   {
@@ -511,6 +515,8 @@ export const products: readonly Product[] = [
       'credit',
       'outstanding balance',
       'outstanding payments',
+      'owe',
+      'money owed',
       'receivables',
       'payables',
     ],

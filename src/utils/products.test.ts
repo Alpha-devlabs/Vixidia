@@ -212,7 +212,7 @@ describe('paths and actions', () => {
     expect(crm.demo).toEqual({ id: 'crm', label: 'Try the demo', kind: 'interactive' });
     expect(productActions(crm)).toEqual({
       primary: { label: 'Try demo', to: '/products/simple-crm/try' },
-      secondary: { label: 'View details', to: '/products/simple-crm' },
+      secondary: { label: 'View solution', to: '/products/simple-crm' },
     });
   });
 

@@ -26,7 +26,7 @@ export function HomeSolutionSearch() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const active = queryWords(query).length > 0;
-  const { shown, total } = useMemo(() => topMatches(siteCatalog, query, HOME_RESULT_LIMIT), [query]);
+  const { shown, total, exact } = useMemo(() => topMatches(siteCatalog, query, HOME_RESULT_LIMIT), [query]);
   const all = siteCatalog.length;
 
   const setQuery = (q: string) => {
@@ -100,7 +100,7 @@ export function HomeSolutionSearch() {
       </form>
 
       <p id={`${id}-status`} className="sr-only" aria-live="polite">
-        {active ? (total ? `${pluralize(total, 'solution')} match “${query.trim()}”.` : `No solutions match “${query.trim()}”.`) : ''}
+        {active ? (total ? (exact ? `${pluralize(total, 'solution')} match “${query.trim()}”.` : `No exact match for “${query.trim()}”. ${pluralize(total, 'closest solution')} shown.`) : `No solutions match “${query.trim()}”.`) : ''}
       </p>
 
       {!active ? (
@@ -121,8 +121,9 @@ export function HomeSolutionSearch() {
         <section ref={resultsRef} aria-labelledby={`${id}-results`} className="mt-3 scroll-mt-24 overflow-hidden rounded-[var(--radius-panel)] border border-line bg-surface text-left shadow-[var(--shadow-panel)]">
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line px-4 py-3 sm:px-5">
             <h2 id={`${id}-results`} className="text-sm font-semibold text-fg">
-              {total ? `${pluralize(total, 'matching solution')}` : 'No matching solutions'}
+              {total ? (exact ? `${pluralize(total, 'matching solution')}` : `No exact match. Closest ${total === 1 ? 'solution' : 'solutions'}`) : 'No matching solutions'}
               <span className="font-normal text-fg-muted"> for “{query.trim()}”</span>
+              {total && !exact ? <span className="block text-xs font-normal text-fg-muted">They match most, but not all, of your words.</span> : null}
             </h2>
             {total > shown.length ? (
               <Link to={withQuery(paths.products, query)} className="text-sm font-medium text-accent-strong underline-offset-4 hover:underline">

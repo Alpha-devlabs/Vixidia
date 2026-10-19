@@ -71,8 +71,8 @@ export function HomePage() {
                 Products we’re developing
               </h2>
               <p className="mt-3 max-w-[60ch] text-lg text-fg-muted">
-                Each product focuses on one part of running a business. Every card says honestly where it stands — in
-                development with a demo, or still a planned concept.
+                Each product focuses on one part of running a business. Every card says honestly where it stands
+                {products.every((p) => p.demo) ? ': each one is in development, with a working demo on sample data.' : ', whether it has a working demo or is still a planned concept.'}
               </p>
             </div>
             <ButtonLink to={paths.products} variant="secondary">

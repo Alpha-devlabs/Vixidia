@@ -90,7 +90,11 @@ export function buildCatalog(products: readonly Product[], ideas: readonly Solut
 
 // ---------- Normalisation ----------
 
-const STOPWORDS = new Set(['a', 'an', 'and', 'the', 'for', 'of', 'to', 'in', 'my', 'our', 'i', 'we', 'with', 'app', 'apps', 'software', 'system', 'tool', 'tools', 'management', 'manage', 'managing', 'solution', 'solutions']);
+const STOPWORDS = new Set([
+  ...['a', 'an', 'and', 'the', 'for', 'of', 'to', 'in', 'my', 'our', 'i', 'we', 'with', 'app', 'apps', 'software', 'system', 'tool', 'tools', 'management', 'manage', 'managing', 'solution', 'solutions'],
+  // Everyday phrasing ("keep track of customers who owe me money"): these say what someone wants to do, not what with.
+  ...['me', 'us', 'who', 'that', 'which', 'what', 'how', 'keep', 'keeping', 'track', 'tracking', 'need', 'want', 'help', 'do', 'can', 'better', 'easily', 'easy', 'using', 'all']
+]);
 
 /** "Follow-ups & Invoices" → "follow ups and invoices". */
 export function normalize(text: string): string {
@@ -175,7 +179,8 @@ export function matchesCategory(entry: SolutionEntry, filter: CategoryFilter): b
 }
 
 /**
- * Entries matching the query and category, best match first. An empty query
+ * Entries matching the query and category, best match first. Every
+ * meaningful word must match. An empty query
  * (or one made only of filler words) matches everything, in catalogue order:
  * existing products first, then planned ideas.
  */
@@ -192,11 +197,40 @@ export function searchCatalog(entries: readonly SolutionEntry[], query: string, 
 
 /** How many entries each category chip would show for the current query. */
 export function categoryCounts(entries: readonly SolutionEntry[], query: string): Record<CategoryFilter, number> {
-  return Object.fromEntries(categoryFilters.map((c) => [c.value, searchCatalog(entries, query, c.value).length])) as Record<CategoryFilter, number>;
+  return Object.fromEntries(categoryFilters.map((c) => [c.value, searchSolutions(entries, query, c.value).entries.length])) as Record<CategoryFilter, number>;
 }
 
 /** The best `limit` matches plus the full count, for compact result lists such as the homepage's. */
-export function topMatches(entries: readonly SolutionEntry[], query: string, limit: number): { shown: SolutionEntry[]; total: number } {
-  const all = searchCatalog(entries, query, 'all');
-  return { shown: all.slice(0, limit), total: all.length };
+export function topMatches(entries: readonly SolutionEntry[], query: string, limit: number): { shown: SolutionEntry[]; total: number; exact: boolean } {
+  const { entries: all, exact } = searchSolutions(entries, query, 'all');
+  return { shown: all.slice(0, limit), total: all.length, exact };
+}
+
+/** Search results, and whether they are exact (every word matched) or only the closest matches. */
+export interface SearchOutcome {
+  entries: SolutionEntry[];
+  exact: boolean;
+}
+
+/**
+ * Like searchCatalog, but when a longer query (three or more meaningful words)
+ * has no exact match, offers entries matching all but one of its words as
+ * clearly labelled closest matches. Short queries never fall back, so a
+ * visitor is never shown something unrelated just to fill the page.
+ */
+export function searchSolutions(entries: readonly SolutionEntry[], query: string, filter: CategoryFilter = 'all'): SearchOutcome {
+  const exact = searchCatalog(entries, query, filter);
+  const q = queryWords(query);
+  if (exact.length || q.length < 3) return { entries: exact, exact: true };
+  const closest = entries
+    .filter((e) => matchesCategory(e, filter))
+    .map((entry, order) => {
+      const ix = index(entry);
+      const matched = q.filter((w) => score(ix, [w]) > 0);
+      return { entry, order, matched: matched.length, s: matched.length ? score(ix, matched) : 0 };
+    })
+    .filter((r) => r.matched >= q.length - 1)
+    .sort((a, b) => b.matched - a.matched || b.s - a.s || a.order - b.order)
+    .map((r) => r.entry);
+  return { entries: closest, exact: closest.length === 0 };
 }

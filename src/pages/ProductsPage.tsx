@@ -8,7 +8,7 @@ import { Button, ButtonLink } from '../components/Button';
 import { StatusBadge } from '../components/StatusBadge';
 import { Badge } from '../components/Badge';
 import { paths } from '../config/routes';
-import { categoryCounts, categoryFilters, searchCatalog, type CategoryFilter } from '../features/solutions/catalog';
+import { categoryCounts, categoryFilters, searchSolutions, type CategoryFilter } from '../features/solutions/catalog';
 import { IdeaCard } from '../features/solutions/IdeaCard';
 import { siteCatalog } from '../features/solutions/siteCatalog';
 import { RequestSolutionDialog } from '../features/solutions/RequestSolutionDialog';
@@ -40,7 +40,8 @@ export function ProductsPage() {
 
   const catalog = siteCatalog;
   const hasIdeas = catalog.some((e) => e.type === 'idea');
-  const results = useMemo(() => searchCatalog(catalog, query, category), [catalog, query, category]);
+  const outcome = useMemo(() => searchSolutions(catalog, query, category), [catalog, query, category]);
+  const results = outcome.entries;
   const counts = useMemo(() => categoryCounts(catalog, query), [catalog, query]);
   const filtered = query.trim() !== '' || category !== 'all';
 
@@ -166,6 +167,11 @@ export function ProductsPage() {
         </p>
 
         <h2 className="sr-only">Results</h2>
+        {results.length && !outcome.exact ? (
+          <p className="mt-6 rounded-[var(--radius-control)] border border-line bg-surface px-4 py-3 text-sm text-fg-muted" role="note">
+            <span className="font-medium text-fg">No exact match for “{query.trim()}”.</span> These are the closest solutions: they match most, but not all, of your words.
+          </p>
+        ) : null}
         {results.length === 0 ? (
           <div className="mt-8 flex flex-col items-center rounded-[var(--radius-panel)] border border-line bg-surface px-4 py-14 text-center">
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-subtle text-fg-subtle">

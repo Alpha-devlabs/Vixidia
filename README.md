@@ -139,6 +139,8 @@ The **Solutions** page (main nav and footer; the URL stays `/products`) is a sea
   - Text is normalised: lower case, accents removed, `&` read as "and", punctuation removed, simple plurals reduced.
   - Every meaningful query word must match the start of a word in the name, category or industry, keywords or summary. Filler words such as "software" or "management" are ignored.
   - Results are ranked by where the words matched. Ties keep catalogue order: products first, then ideas.
+  - Everyday phrasing works: words such as "keep", "track", "who" and "me" are ignored, so "keep track of customers who owe me money" finds the invoice tracker.
+  - `searchSolutions` adds one honest fallback: a query of three or more meaningful words with no exact match may show entries matching all but one of its words, labelled "No exact match. Closest solutions". Shorter queries never fall back. The homepage and the finder both use it, and the category counts follow it.
 - **Filters:** category filters are All solutions, General business tools, Industry-specific and Planned ideas. They combine with the search. The query and category live in the URL (`?q=…&category=…`).
 - **Request a solution (`solutionRequest.ts` and `RequestSolutionDialog.tsx`):**
   - The form validates the request, then tells the visitor plainly that nothing was sent or stored, and offers a copy to keep.
