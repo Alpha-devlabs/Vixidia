@@ -7,6 +7,7 @@ import { Wordmark } from './Wordmark';
 
 const links = [
   { label: 'Solutions', to: paths.products },
+  { label: 'Pricing', to: paths.pricing },
   { label: 'Services', to: paths.services },
   { label: 'How it works', to: paths.howItWorks },
   { label: 'Privacy policy', to: paths.privacy },

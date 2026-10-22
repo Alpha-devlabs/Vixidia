@@ -2,6 +2,7 @@
 export const paths = {
   home: '/',
   products: '/products',
+  pricing: '/pricing',
   services: '/services',
   howItWorks: '/how-it-works',
   inquiry: '/workflow',
@@ -11,6 +12,7 @@ export const paths = {
 
 export const mainNav = [
   { label: 'Solutions', to: paths.products },
+  { label: 'Pricing', to: paths.pricing },
   { label: 'Services', to: paths.services },
   { label: 'How it works', to: paths.howItWorks },
 ] as const;

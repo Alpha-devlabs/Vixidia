@@ -5,6 +5,7 @@ import { HomePage } from '../pages/HomePage';
 import { ProductsPage } from '../pages/ProductsPage';
 import { ProductDetailPage } from '../pages/ProductDetailPage';
 import { ProductDemoPage } from '../pages/ProductDemoPage';
+import { PricingPage } from '../pages/PricingPage';
 import { ServicesPage } from '../pages/ServicesPage';
 import { HowItWorksPage } from '../pages/HowItWorksPage';
 import { InquiryPage } from '../pages/InquiryPage';
@@ -23,6 +24,7 @@ export function App() {
           <Route index element={<HomePage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/:slug" element={<ProductDetailPage />} />
+          <Route path="pricing" element={<PricingPage />} />
           <Route path="services" element={<ServicesPage />} />
           <Route path="how-it-works" element={<HowItWorksPage />} />
           <Route path="workflow" element={<InquiryPage />} />

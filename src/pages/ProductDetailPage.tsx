@@ -147,9 +147,15 @@ function ProductDetail({ product }: { product: Product }) {
                 <div className="mt-6 sm:mt-7">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-3">
                     {ctaLink('lg')}
-                    <ButtonLink to={paths.products} variant="subtle" size="lg">
-                      Browse other solutions
-                    </ButtonLink>
+                    {product.industry ? (
+                      <ButtonLink to={`${paths.pricing}?solution=${product.slug}`} variant="subtle" size="lg">
+                        See pricing
+                      </ButtonLink>
+                    ) : (
+                      <ButtonLink to={paths.products} variant="subtle" size="lg">
+                        Browse other solutions
+                      </ButtonLink>
+                    )}
                   </div>
                   <p className="mt-3 flex items-center gap-1.5 text-sm text-fg-muted">
                     <FlaskConical size={15} className="shrink-0" aria-hidden="true" />
