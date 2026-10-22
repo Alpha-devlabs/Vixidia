@@ -1,6 +1,6 @@
 import { useMemo, useReducer, useRef, useState } from 'react';
 import { createSampleState, sampleBusiness } from '../../data/waterSample';
-import { waterReducer, summarize, type NewOrderInput } from './waterLogic';
+import { dueRegulars, waterReducer, summarize, type NewOrderInput } from './waterLogic';
 import { useToast } from '../../components/Toast';
 
 /**
@@ -14,6 +14,8 @@ export function useWaterDemo() {
   const { toast, notify } = useToast(4500);
   const nextSeq = useRef(state.nextOrderSeq);
   nextSeq.current = state.nextOrderSeq;
+  const current = useRef(state);
+  current.current = state;
 
   const summary = useMemo(() => summarize(state, sampleBusiness.today), [state]);
 
@@ -22,6 +24,19 @@ export function useWaterDemo() {
       markDelivered(orderId: string, label: string) {
         dispatch({ type: 'markDelivered', orderId });
         notify(`${label} marked delivered.`);
+      },
+      /** Finishes a stop on the round: delivered, empties taken back, and cash if it was collected. */
+      completeStop(orderId: string, label: string, emptiesCollected: number, cashCollected: boolean) {
+        dispatch({ type: 'completeStop', orderId, emptiesCollected, cashCollected });
+        const empties = `${emptiesCollected} ${emptiesCollected === 1 ? 'empty' : 'empties'} back`;
+        notify(`${label} delivered · ${empties}${cashCollected ? ' · cash collected' : ''}.`);
+      },
+      /** Adds today's orders for every regular customer who is due but not yet on the round. */
+      addRegulars() {
+        const count = dueRegulars(current.current, sampleBusiness.today).length;
+        if (count === 0) return;
+        dispatch({ type: 'addRegulars', day: sampleBusiness.today, unitPrice: sampleBusiness.defaultUnitPrice, prefix: sampleBusiness.orderPrefix });
+        notify(`${count} regular ${count === 1 ? 'delivery' : 'deliveries'} added to today’s run.`);
       },
       markPaid(orderId: string, label: string) {
         dispatch({ type: 'markPaid', orderId });

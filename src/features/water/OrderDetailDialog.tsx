@@ -3,7 +3,7 @@ import type { WaterState } from '../../types/water';
 import { Dialog } from '../../components/Dialog';
 import { Button } from '../../components/Button';
 import { DeliveryPill, PaymentPill } from './StatusPills';
-import { customerBalances, orderTotal } from './waterLogic';
+import { cansHeld, customerBalances, emptiesFor, orderTotal } from './waterLogic';
 import type { WaterActions } from './useWaterDemo';
 import { formatCurrency, formatLongDay } from '../../utils/format';
 import { sampleBusiness } from '../../data/waterSample';
@@ -70,6 +70,26 @@ export function OrderDetailDialog({ state, orderId, onClose, actions }: Props) {
             </dd>
             <dt className="text-fg-muted">Total</dt>
             <dd className="tabular text-base font-semibold">{formatCurrency(orderTotal(order))}</dd>
+            {order.delivery === 'delivered' ? (
+              <>
+                <dt className="text-fg-muted">Empties back</dt>
+                <dd className="tabular">{emptiesFor(order)}</dd>
+              </>
+            ) : null}
+            {customer ? (
+              <>
+                <dt className="text-fg-muted">Cans held now</dt>
+                <dd className="tabular">
+                  {cansHeld(customer, state.orders)} · deposit covers {customer.depositCans ?? 0}
+                </dd>
+              </>
+            ) : null}
+            {order.fromSchedule || order.collectedOnRound ? (
+              <>
+                <dt className="text-fg-muted">Recorded</dt>
+                <dd>{[order.fromSchedule ? 'Regular delivery' : '', order.collectedOnRound ? 'Cash collected on the round' : ''].filter(Boolean).join(' · ')}</dd>
+              </>
+            ) : null}
             {order.note ? (
               <>
                 <dt className="text-fg-muted">Order note</dt>

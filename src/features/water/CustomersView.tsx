@@ -1,7 +1,7 @@
 import { useId, useMemo, useState } from 'react';
 import { Search, SearchX, Plus } from 'lucide-react';
 import type { WaterState } from '../../types/water';
-import { customerBalances, orderTotal, searchCustomers } from './waterLogic';
+import { cansHeld, customerBalances, orderTotal, scheduleLabel, searchCustomers } from './waterLogic';
 import { Dialog } from '../../components/Dialog';
 import { Button } from '../../components/Button';
 import { controlClass } from '../../components/forms';
@@ -79,6 +79,7 @@ export function CustomersView({ state, actions, onNewOrderFor, onOpenOrder }: Pr
                 </span>
                 <span className="block text-sm text-fg-muted">
                   {b.customer.area} · {kindLabel[b.customer.kind]} · {pluralize(b.orderCount, 'order')}
+                  {b.customer.schedule ? ' · Regular' : ''}
                 </span>
               </button>
               <span className="tabular text-right text-sm">
@@ -131,6 +132,23 @@ export function CustomersView({ state, actions, onNewOrderFor, onOpenOrder }: Pr
                   <dd className="tabular mt-1 font-semibold">{value}</dd>
                 </div>
               ))}
+            </dl>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+              <dt className="text-fg-muted">Regular delivery</dt>
+              <dd>{selected.customer.schedule ? scheduleLabel(selected.customer.schedule) : 'None — orders when they call'}</dd>
+              <dt className="text-fg-muted">Cans held</dt>
+              <dd className="tabular">
+                {(() => {
+                  const held = cansHeld(selected.customer, state.orders);
+                  const covered = selected.customer.depositCans ?? 0;
+                  return (
+                    <>
+                      {held} · deposit covers {covered}
+                      {held > covered ? <span className="font-semibold text-warning-strong"> · {held - covered} beyond deposit</span> : null}
+                    </>
+                  );
+                })()}
+              </dd>
             </dl>
             {selected.customer.note ? <p className="text-sm text-fg-muted">Delivery note: {selected.customer.note}</p> : null}
             <div>

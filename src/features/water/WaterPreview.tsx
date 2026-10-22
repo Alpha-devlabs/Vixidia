@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ClipboardList, LayoutDashboard, Users, type LucideIcon } from 'lucide-react';
+import { ClipboardList, LayoutDashboard, Package, Truck, Users, type LucideIcon } from 'lucide-react';
 import { createSampleState, sampleBusiness } from '../../data/waterSample';
 import { filterOrders, indexCustomers, orderTotal, summarize } from './waterLogic';
 import { MetricCards } from './MetricCards';
@@ -9,8 +9,10 @@ import { cn } from '../../utils/cn';
 
 const previewNav: { icon: LucideIcon; label: string }[] = [
   { icon: LayoutDashboard, label: 'Today' },
+  { icon: Truck, label: 'Delivery round' },
   { icon: ClipboardList, label: 'All orders' },
   { icon: Users, label: 'Customers' },
+  { icon: Package, label: 'Cans & deposits' },
 ];
 
 /** Read-only snapshot of the dashboard, rendered from the same sample data and logic. */

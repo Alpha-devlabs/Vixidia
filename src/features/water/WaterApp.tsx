@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { ClipboardList, Clock, Droplets, LayoutDashboard, Plus, RotateCcw, Users, Wallet, type LucideIcon } from 'lucide-react';
+import { ClipboardList, Clock, Droplets, LayoutDashboard, Package, Plus, Repeat, RotateCcw, Truck, Users, Wallet, type LucideIcon } from 'lucide-react';
 import { useWaterDemo } from './useWaterDemo';
 import { MetricCards } from './MetricCards';
 import { OrdersPanel } from './OrdersPanel';
 import { DuesPanel } from './DuesPanel';
 import { CustomersView } from './CustomersView';
+import { RoundView } from './RoundView';
+import { CansView } from './CansView';
 import { OrderDetailDialog } from './OrderDetailDialog';
 import { AddOrderDialog } from './AddOrderDialog';
-import type { OrderFilter } from './waterLogic';
+import { dueRegulars, type OrderFilter } from './waterLogic';
 import { sampleBusiness } from '../../data/waterSample';
 import { Button } from '../../components/Button';
 import { ToastRegion } from '../../components/Toast';
@@ -15,12 +17,14 @@ import { formatLongDay } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { useResetDemo } from '../demo/useResetDemo';
 
-type View = 'today' | 'orders' | 'customers';
+type View = 'today' | 'round' | 'orders' | 'customers' | 'cans';
 
 const views: { id: View; label: string; icon: LucideIcon }[] = [
   { id: 'today', label: 'Today', icon: LayoutDashboard },
+  { id: 'round', label: 'Delivery round', icon: Truck },
   { id: 'orders', label: 'All orders', icon: ClipboardList },
   { id: 'customers', label: 'Customers', icon: Users },
+  { id: 'cans', label: 'Cans & deposits', icon: Package },
 ];
 
 /**
@@ -63,9 +67,11 @@ export function WaterApp() {
     setAddOpen(false);
   };
   const { reset, resetDialog } = useResetDemo(changed, resetNow);
+  const regularsDue = dueRegulars(state, sampleBusiness.today);
 
   const quickActions: { label: string; icon: LucideIcon; onClick: () => void }[] = [
     { label: 'New order', icon: Plus, onClick: () => openAdd() },
+    { label: 'Open delivery round', icon: Truck, onClick: () => goTo('round') },
     { label: 'Show deliveries left', icon: Clock, onClick: () => showFilter('pending') },
     { label: 'Show unpaid orders', icon: Wallet, onClick: () => showFilter('unpaid') },
     { label: 'Reset sample data', icon: RotateCcw, onClick: reset },
@@ -128,6 +134,25 @@ export function WaterApp() {
 
           {view === 'today' ? (
             <>
+              {regularsDue.length > 0 ? (
+                <section
+                  aria-label="Regular deliveries not on today’s run"
+                  className="flex flex-col gap-3 rounded-[var(--radius-panel)] border border-accent/50 bg-accent-soft p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <p className="flex gap-2.5 text-sm text-fg">
+                    <Repeat size={18} className="mt-0.5 shrink-0 text-accent-strong" aria-hidden="true" />
+                    <span>
+                      <strong className="font-semibold">
+                        {regularsDue.length} regular {regularsDue.length === 1 ? 'delivery is' : 'deliveries are'} due today
+                      </strong>{' '}
+                      but not on the run yet: {regularsDue.map((c) => `${c.name} (${c.schedule!.quantity})`).join(', ')}.
+                    </span>
+                  </p>
+                  <Button size="sm" onClick={actions.addRegulars} className="shrink-0">
+                    <Plus size={16} aria-hidden="true" /> Add to today’s run
+                  </Button>
+                </section>
+              ) : null}
               <MetricCards summary={summary} />
               <div className="grid grid-cols-[minmax(0,1fr)] gap-5 2xl:grid-cols-[minmax(0,1fr)_20rem]">
                 <OrdersPanel
@@ -178,6 +203,10 @@ export function WaterApp() {
               actions={actions}
             />
           ) : null}
+
+          {view === 'round' ? <RoundView state={state} actions={actions} /> : null}
+
+          {view === 'cans' ? <CansView state={state} /> : null}
 
           {view === 'customers' ? <CustomersView state={state} actions={actions} onNewOrderFor={openAdd} onOpenOrder={setOpenOrderId} /> : null}
         </div>

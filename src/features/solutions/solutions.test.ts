@@ -138,8 +138,9 @@ describe('search', () => {
     expect(first('coaching classes')).toBe('Tuition Centre Management');
     expect(first('wholesale')).toBe('Small Distributor Management');
     expect(first('water cans')).toBe('Water Delivery Management');
-    // The original demo doesn't track empty cans, so it isn't offered for that search.
-    expect(names('empty cans')).toEqual([]);
+    // The demo now tracks empty cans and deposits, so it is offered for those searches.
+    expect(first('empty cans')).toBe('Water Delivery Management');
+    expect(first('can deposit')).toBe('Water Delivery Management');
     expect(first('delivery management')).toBe('Water Delivery Management');
     // Invoicing is also about customer balances, so both are offered.
     expect(names('customer balances')).toEqual(['Invoice & Payment Tracker', 'Water Delivery Management', 'Small Distributor Management']);

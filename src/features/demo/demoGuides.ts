@@ -63,7 +63,7 @@ export const demoGuides: Record<DemoId, DemoGuide> = {
     target: (r) => findTarget(r, 'button[aria-label^="Check in "]'),
   },
   water: {
-    intro: 'Run today’s water-can deliveries: what is left to deliver and who still owes money.',
+    intro: 'Run today’s water-can deliveries: regular customers, the delivery round, cans and deposits, and who still owes money.',
     tryFirst: 'Mark the next order delivered, then mark it paid.',
     target: (r) => findTarget(r, 'button[aria-label$=" delivered"][aria-label^="Mark "]'),
   },
